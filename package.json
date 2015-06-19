@@ -1,0 +1,27 @@
+{
+  "name": "tagalong",
+  "version": "1.0.0",
+  "description": "HTML templating done right",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha",
+    "bundle": "browserify bundle.js > tagalong.js",
+    "minify": "uglifyjs tagalong.js > tagalong.min.js"
+  },
+  "author": {
+    "name": "Shawn Allen",
+    "url": "https://github.com/shawnbot"
+  },
+  "license": "CC0",
+  "devDependencies": {
+    "browserify": "^10.2.4",
+    "jsdom": "^5.4.3",
+    "mocha": "^2.2.5"
+  },
+  "dependencies": {
+    "jsdom": "^3.1.2"
+  }
+}
