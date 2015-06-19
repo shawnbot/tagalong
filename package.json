@@ -10,7 +10,8 @@
     "test": "mocha",
     "bundle": "browserify bundle.js > tagalong.js",
     "minify": "uglifyjs tagalong.js > tagalong.min.js",
-    "watch": "watchy -w index.js,bundle.js -- npm run bundle && npm run minify"
+    "build": "npm run bundle && npm run minify",
+    "watch": "watchy -w index.js,bundle.js -- npm run build"
   },
   "author": {
     "name": "Shawn Allen",
