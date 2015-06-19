@@ -1,5 +1,8 @@
 # tagalong
-Tagalong is DOM templating done right. You give it a DOM element and some data, and it does exactly what you'd expect.
+Tagalong is DOM templating done right. You give it a DOM element
+and some data, and it does exactly what you'd expect. The
+[source](index.js) is simple (under 200 lines) and the browser
+bundle weighs in at less than 4K minified and 2K gzipped.
 
 ###### HTML
 ```html
@@ -37,7 +40,7 @@ Yep.
 Given a DOM element `node`, some `data`, and an optional hash of `directives`:
 
 ```js
-tagalong(node, data, directives);
+node = tagalong(node, data, directives);
 ```
 
 1. If `data` is an Array, it's joined to the *child elements* of `node`:
@@ -56,3 +59,8 @@ tagalong(node, data, directives);
   * If `directives.stringify` is a Function, the value is interpolated as: `directive.stringify.call(node, data)`.
   * The `data` or interpolated value is set as `node.textContent`.
   * No, you can't set a node's `innerHTML` directly, because that's dangerous.
+
+For convenience, you can also specify `node` as a CSS selector,
+in which case the node will be looked up with
+`document.querySelector()`. The `tagalong()` function returns the
+element node either way.
