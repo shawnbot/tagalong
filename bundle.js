@@ -1,0 +1,1 @@
+window.tagalong = require('.');
