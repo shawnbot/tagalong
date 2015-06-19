@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Tagalong</title>
+    <meta charset="utf-8">
+    <script src="https://cdn.rawgit.com/shawnbot/tagalong/master/tagalong.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/mode/htmlmixed/htmlmixed.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/theme/ttcn.min.css">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <header class="container">
+      <h1>Tagalong</h1>
+    </header>
+
+    <section id="about" class="container">
+      <p>Tagalong is a dead-simple JavaScript DOM templating library that lets
+      you "bind" data (objects, arrays, strings and numbers) to elements in
+      your document, creating new elements as needed and only updating the
+      elements that relate to data. For more information, check out the
+      <a href="https://github.com/shawnbot/tagalong/">project on GitHub</a>.</p>
+    </section>
+
+    <form class="container">
+
+      <fieldset id="input">
+        <legend>Input</legend>
+        <p>Edit the HTML and JavaScript below and watch the output change on
+        the right.</p>
+
+        <h2>HTML</h2>
+        <textarea id="input-html">&lt;div id="template"&gt;
+  &lt;h2 class="title"&gt;title&lt;/h2&gt;
+  &lt;p class="desc"&gt;description&lt;/p&gt;
+  &lt;ul class="items"&gt;
+    &lt;li&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;</textarea>
+        <h2>JavaScript</h2>
+        <textarea id="input-js">tagalong('#template', {
+  title: 'This is the Title',
+  desc: 'This is the description.',
+  items: ['x', 'y', 'z']
+});</textarea>
+      </fieldset>
+
+      <fieldset id="output">
+        <legend>Output</legend>
+        <div id="output-node" class="output">
+        </div>
+
+        <h2>HTML</h2>
+        <pre id="output-html" class="output">
+        </pre>
+      </fieldset>
+    </form>
+
+    <section id="credits" class="container">
+      <p>This demo was made with love and <a href="https://codemirror.net/">CodeMirror</a>.</p>
+    </section>
+
+    <script src="index.js"></script>
+  </body>
+</html>

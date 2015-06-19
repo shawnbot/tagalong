@@ -1,0 +1,53 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, arial, sans-serif;
+  padding: 2rem;
+}
+
+.container {
+  max-width: 50em;
+  margin: 0 auto;
+}
+
+.CodeMirror {
+  height: 12em;
+}
+
+.output {
+  display: block;
+  background: #f9f9f9;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+pre.output {
+  white-space: pre-wrap;
+}
+
+fieldset legend {
+  font-weight: bold;
+  padding: 0 .5rem;
+}
+
+@media screen and (min-width: 960px) {
+  form {
+    display: flex;
+  }
+
+  form > fieldset {
+    flex: 1;
+    border-style: solid;
+  }
+
+  .output {
+  }
+}
