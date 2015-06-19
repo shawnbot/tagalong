@@ -4,7 +4,7 @@ window.tagalong = require('./');
 },{"./":2}],2:[function(require,module,exports){
 const ARRAY_TEMPLATE = '__array_template__';
 
-function bind(node, data, directives) {
+var tagalong = function(node, data, directives) {
   if (typeof node === 'string') {
     var selector = node;
     node = document.querySelector(node);
@@ -27,7 +27,13 @@ function bind(node, data, directives) {
   }
 
   return bindScalar(node, data, directives);
-}
+};
+
+tagalong.object = bindObject;
+tagalong.array = bindArray;
+tagalong.scalar = bindScalar;
+
+module.exports = tagalong;
 
 function bindObject(node, data, directives) {
   for (var key in data) {
@@ -57,7 +63,7 @@ function bindArray(node, data, directives) {
     }
   }
   for (var i = 0; i < dataCount; i++) {
-    bind(nodes[i], data[i], directives);
+    tagalong(nodes[i], data[i], directives);
   }
   return node;
 }
@@ -67,7 +73,7 @@ function bindKey(node, key, value, directives) {
   if (!target) {
     return false;
   }
-  return bind(target, value, directives);
+  return tagalong(target, value, directives);
 }
 
 function bindScalar(node, data, directives) {
@@ -131,7 +137,7 @@ function applyDirectives(node, data, directives) {
     }
   }
   if (interpolated) {
-    bind(node, interpolated);
+    tagalong(node, interpolated);
   }
 }
 
@@ -151,7 +157,5 @@ function expandKeys(obj) {
   }
   return expanded;
 }
-
-module.exports = bind;
 
 },{}]},{},[1]);
