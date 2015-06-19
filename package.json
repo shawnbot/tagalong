@@ -17,6 +17,7 @@
     "name": "Shawn Allen",
     "url": "https://github.com/shawnbot"
   },
+  "repository": "shawnbot/tagalong",
   "license": "CC0",
   "devDependencies": {
     "browserify": "^10.2.4",
