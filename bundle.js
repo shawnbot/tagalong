@@ -1,1 +1,1 @@
-window.tagalong = require('.');
+window.tagalong = require('./');
