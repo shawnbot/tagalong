@@ -37,7 +37,7 @@
   inputHTML.on('change', change);
   inputJS.on('change', change);
 
-  change();
+  // change();
 
   var multiline = function(fn) {
     return fn.toString()
@@ -47,6 +47,12 @@
   };
 
   var examples = [
+    {
+      id: '',
+      title: 'Default',
+      template: inputHTML.getValue(),
+      script: inputJS.getValue()
+    },
 
     {
       id: 'list',
@@ -110,6 +116,7 @@ tagalong('#template', {
   var hashchange = function() {
     if (selectedLink) selectedLink.classList.remove('active');
     var link = document.querySelector('[href="' + location.hash + '"]');
+    if (!link) link = ex.querySelector('a[href]');
     if (link) {
       link.classList.add('active');
       // console.log('activating example:', link);
@@ -118,11 +125,11 @@ tagalong('#template', {
       selectedLink = link;
       change(true);
     } else {
-      // console.log('no such example:', location.hash);
+      console.log('no such example:', location.hash);
     }
   };
 
   window.addEventListener('hashchange', hashchange);
-  if (location.hash) hashchange();
+  hashchange();
 
 })();
