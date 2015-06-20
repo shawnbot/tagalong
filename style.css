@@ -38,6 +38,32 @@ fieldset legend {
   padding: 0 .5rem;
 }
 
+.examples > a {
+  display: inline-block;
+  margin: 0 .5rem;
+  font-weight: bold;
+}
+
+.examples > a.active {
+  text-decoration: none;
+  color: inherit;
+}
+
+form.container {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+td, th {
+  text-align: left;
+  border: 1px solid #ccc;
+  padding: .5rem;
+}
+
 @media screen and (min-width: 960px) {
   form {
     display: flex;
