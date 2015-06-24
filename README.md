@@ -1,4 +1,6 @@
 # tagalong
+![travis build status](https://api.travis-ci.org/shawnbot/tagalong.svg)
+
 Tagalong is DOM templating done right. You give it a DOM element
 and some data, and it does exactly what you'd expect. The
 [source](index.js) is simple (under 200 lines) and the browser
