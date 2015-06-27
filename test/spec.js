@@ -131,6 +131,16 @@ describe('tagalong', function() {
         assert.equal(span.textContent, 'foo');
       });
 
+      it('interpolates nested directives', function() {
+        var div = document.createElement('div');
+        var span = div.appendChild(document.createElement('span'));
+        span.className = 'x';
+        var b = span.appendChild(document.createElement('b'));
+        b.className = 'y';
+        tagalong(div, {y: 'foo'}, {x: {y: 'y'}});
+        assert.equal(b.textContent, 'foo');
+      });
+
     }); // directive interpolation
 
   }); // object binding
@@ -193,6 +203,27 @@ describe('tagalong', function() {
       assert.equal(lis.length, 2);
       assert.equal(lis[0].firstChild.textContent, 'x');
       assert.equal(lis[1].firstChild.textContent, 'y');
+    });
+
+    it('binds directives to individual array elements', function() {
+      var list = document.createElement('ul');
+      var item = list.appendChild(document.createElement('li'));
+      var link = item.appendChild(document.createElement('a'));
+      link.className = 'link';
+
+      var data = [
+        {text: 'foo', href: 'foo.html'},
+        {text: 'bar', href: 'bar.html'}
+      ];
+      tagalong(list, data, {
+        link: {
+          text: 'text',
+          '@href': 'href'
+        }
+      });
+      var links = list.querySelectorAll('li a');
+      assert.equal(links[0].getAttribute('href'), 'foo.html');
+      assert.equal(links[0].textContent, 'foo');
     });
 
   }); // array binding
