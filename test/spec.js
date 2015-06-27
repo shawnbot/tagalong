@@ -1,8 +1,8 @@
-var bind = require('../');
+var tagalong = require('../');
 var assert = require('assert');
 var jsdom = require('jsdom');
 
-describe('data binding', function() {
+describe('tagalong', function() {
 
   var window, document;
   beforeEach(function(done) {
@@ -22,7 +22,7 @@ describe('data binding', function() {
   describe('scalar binding', function() {
     it('binds a scalar to element text', function() {
       var el = document.createElement('span');
-      bind(el, 'foo');
+      tagalong(el, 'foo');
       assert.equal(el.textContent, 'foo');
     });
   });
@@ -33,7 +33,7 @@ describe('data binding', function() {
       var el = document.createElement('div');
       var span = el.appendChild(document.createElement('span'));
       span.className = 'foo';
-      bind(el, {foo: 'bar'});
+      tagalong(el, {foo: 'bar'});
       assert.equal(span.textContent, 'bar');
     });
 
@@ -41,7 +41,7 @@ describe('data binding', function() {
       var el = document.createElement('div');
       var span = el.appendChild(document.createElement('span'));
       span.setAttribute('data-bind', 'foo');
-      bind(el, {foo: 'bar'});
+      tagalong(el, {foo: 'bar'});
       assert.equal(span.textContent, 'bar');
     });
 
@@ -49,27 +49,27 @@ describe('data binding', function() {
       var el = document.createElement('div');
       var span = el.appendChild(document.createElement('span'));
       span.setAttribute('data-bind', 'Some Key');
-      bind(el, {'Some Key': 'bar'});
+      tagalong(el, {'Some Key': 'bar'});
       assert.equal(span.textContent, 'bar');
     });
 
-    describe('@attribute setting', function() {
+    describe('@attribute', function() {
 
       it('binds attributes with "@attr" directives as strings', function() {
         var div = document.createElement('div');
-        bind(div, {foo: 'bar'}, {'@id': 'foo'});
+        tagalong(div, {foo: 'bar'}, {'@id': 'foo'});
         assert.equal(div.id, 'bar');
       });
 
       it('binds attributes with "@attr" directives as functions', function() {
         var div = document.createElement('div');
-        bind(div, {foo: 'bar'}, {'@id': function(d) { return d.foo + '_'; }});
+        tagalong(div, {foo: 'bar'}, {'@id': function(d) { return d.foo + '_'; }});
         assert.equal(div.id, 'bar_');
       });
 
       it('binds attributes with "@attr" directives as `true`', function() {
         var div = document.createElement('div');
-        bind(div, {id: 'bar'}, {'@id': true});
+        tagalong(div, {id: 'bar'}, {'@id': true});
         assert.equal(div.id, 'bar');
       });
 
@@ -77,7 +77,7 @@ describe('data binding', function() {
         var div = document.createElement('div');
         var span = div.appendChild(document.createElement('span'));
         span.className = 'x';
-        bind(div, {x: {foo: 'bar'}}, {x: {'@id': 'foo'}});
+        tagalong(div, {x: {foo: 'bar'}}, {x: {'@id': 'foo'}});
         assert.equal(span.id, 'bar');
         assert.equal(span.textContent, '');
       });
@@ -86,7 +86,7 @@ describe('data binding', function() {
         var div = document.createElement('div');
         var span = div.appendChild(document.createElement('span'));
         span.className = 'x';
-        bind(div, {x: {foo: 'bar'}}, {'x.@id': 'foo'});
+        tagalong(div, {x: {foo: 'bar'}}, {'x.@id': 'foo'});
         assert.equal(span.id, 'bar');
         assert.equal(span.textContent, '');
       });
@@ -99,7 +99,7 @@ describe('data binding', function() {
         var div = document.createElement('div');
         var span = div.appendChild(document.createElement('span'));
         span.className = 'x';
-        bind(div, {y: 'foo'}, {x: 'y'});
+        tagalong(div, {y: 'foo'}, {x: 'y'});
         assert.equal(span.textContent, 'foo');
       });
 
@@ -109,7 +109,7 @@ describe('data binding', function() {
         span.className = 'x';
         var i = span.appendChild(document.createElement('i'));
         i.className = 'y';
-        bind(div, {x: {foo: 'bar'}}, {x: {y: 'foo'}});
+        tagalong(div, {x: {foo: 'bar'}}, {x: {y: 'foo'}});
         assert.equal(i.textContent, 'bar');
       });
 
@@ -119,7 +119,7 @@ describe('data binding', function() {
         span.className = 'x';
         var i = span.appendChild(document.createElement('i'));
         i.className = 'y';
-        bind(div, {x: {foo: 'bar'}}, {'x.y': 'foo'});
+        tagalong(div, {x: {foo: 'bar'}}, {'x.y': 'foo'});
         assert.equal(i.textContent, 'bar');
       });
 
@@ -127,7 +127,7 @@ describe('data binding', function() {
         var div = document.createElement('div');
         var span = div.appendChild(document.createElement('span'));
         span.className = 'x';
-        bind(div, {y: 'foo'}, {x: function(d) { return d.y; }});
+        tagalong(div, {y: 'foo'}, {x: function(d) { return d.y; }});
         assert.equal(span.textContent, 'foo');
       });
 
@@ -140,7 +140,7 @@ describe('data binding', function() {
     it("binds an array to a node's children", function() {
       var ul = document.createElement('ul');
       var li = ul.appendChild(document.createElement('li'));
-      bind(ul, ['foo', 'bar']);
+      tagalong(ul, ['foo', 'bar']);
       var lis = ul.querySelectorAll('li');
       assert.equal(lis.length, 2);
       assert.equal(lis[0].textContent, 'foo');
@@ -152,7 +152,7 @@ describe('data binding', function() {
       var ul = div.appendChild(document.createElement('ul'));
       ul.className = 'items';
       var li = ul.appendChild(document.createElement('li'));
-      bind(div, {items: ['foo', 'bar']});
+      tagalong(div, {items: ['foo', 'bar']});
       var lis = ul.querySelectorAll('li');
       assert.equal(lis.length, 2);
       assert.equal(lis[0].textContent, 'foo');
@@ -165,7 +165,7 @@ describe('data binding', function() {
       ul.className = 'items';
       var li = ul.appendChild(document.createElement('li'));
       li.appendChild(document.createElement('span')).className = 'value';
-      bind(div, {
+      tagalong(div, {
         items: [
           {value: 'foo'},
           {value: 'bar'}
@@ -185,9 +185,9 @@ describe('data binding', function() {
       li.appendChild(document.createElement('span')).className = 'value';
 
       var data = {items: []};
-      bind(div, data);
+      tagalong(div, data);
       data.items = [{value: 'x'}, {value: 'y'}];
-      bind(div, data);
+      tagalong(div, data);
 
       var lis = ul.querySelectorAll('li');
       assert.equal(lis.length, 2);
