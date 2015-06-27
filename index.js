@@ -102,6 +102,35 @@ tagalong('#template', {
   ]
 });
       */})
+    },
+
+    {
+      id: 'list-directives',
+      title: 'List with Directives',
+      template: multiline(function(){/*
+<div id="template">
+  <h2 class="title">title</h2>
+  <p class="desc">description</p>
+  <ul class="items">
+    <li><a data-bind="id" class="link"></a></li>
+  </ul>
+</div>
+      */}),
+      script: multiline(function(){/*
+tagalong('#template', {
+  title: 'This is the Title',
+  desc: 'This is the description.',
+  items: [
+    {id: 'x'},
+    {id: 'y'},
+    {id: 'z'},
+  ]
+}, {
+  link: {
+    '@href': 'id'
+  }
+});
+      */})
     }
 
   ];
