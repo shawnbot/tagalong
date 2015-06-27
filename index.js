@@ -126,8 +126,12 @@ tagalong('#template', {
     {id: 'z'},
   ]
 }, {
-  link: {
-    '@href': 'id'
+  items: {
+    link: {
+      '@href': function(d) {
+        return '#' + d.id;
+      }
+    }
   }
 });
       */})
