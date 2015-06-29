@@ -29,7 +29,7 @@
         } catch (error) {
           console.error(error);
         }
-        outputHTML.textContent = template.outerHTML;
+        outputHTML.textContent = outputNode.innerHTML;
       }, force === true ? 10 : ms);
     };
   })(200);
