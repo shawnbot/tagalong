@@ -1,6 +1,6 @@
 {
   "name": "tagalong",
-  "version": "0.1.2",
+  "version": "0.3.0",
   "description": "HTML templating done right",
   "main": "index.js",
   "directories": {
@@ -8,10 +8,10 @@
   },
   "scripts": {
     "test": "mocha",
-    "bundle": "browserify bundle.js > tagalong.js",
+    "bundle": "browserify src/bundle.js > tagalong.js",
     "minify": "uglifyjs tagalong.js > tagalong.min.js",
     "build": "npm run bundle && npm run minify",
-    "watch": "watchy -w index.js,bundle.js -- npm run build"
+    "watch": "watchy -w src,package.json -- npm run build"
   },
   "author": {
     "name": "Shawn Allen",
@@ -19,12 +19,14 @@
   },
   "repository": "shawnbot/tagalong",
   "license": "CC0",
+  "dependencies": {
+    "incremental-dom": "^0.1.0"
+  },
   "devDependencies": {
-    "browserify": "^10.2.4",
+    "browserify": "^10.2.6",
     "jsdom": "^3.1.2",
     "mocha": "^2.2.5",
     "uglifyjs": "^2.4.10",
     "watchy": "^0.6.2"
-  },
-  "dependencies": {}
+  }
 }
