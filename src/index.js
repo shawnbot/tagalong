@@ -1,9 +1,10 @@
 var dom = require('incremental-dom');
 
-var VOID_ELEMENTS = 'area base br col command embed hr img input keygen link meta param source track wbr'.split(' ');
+var VOID_ELEMENTS = boolMap('area base br col command embed hr img input keygen link meta param source track wbr'.split(' '));
 
 module.exports = {
   compile: compile,
+
   /**
    * Bind data (with optional directives) to a node, and return a function that
    * can be used to rebind data to the same node.
@@ -62,7 +63,11 @@ function compile(source, directives) {
 function binder(node, directives) {
   return function(data) {
     return function() {
-      bindChildren(node, data, directives);
+      if (data && typeof data === 'object') {
+        bindChildren(node, data, directives);
+      } else {
+        bindScalar(node, data, directives);
+      }
     };
   };
 }
@@ -78,8 +83,7 @@ function bind(node, data, directives) {
 
   var name = node.nodeName.toLowerCase();
   var attrs = interpolateAttributes(node, data, directives);
-  var isVoid = VOID_ELEMENTS.indexOf(name) > -1;
-  if (isVoid) {
+  if (VOID_ELEMENTS[name]) {
     dom.elementVoid(name, '', attrs);
     return;
   }
@@ -91,7 +95,6 @@ function bind(node, data, directives) {
       bindScalar(node, data, directives);
       break;
 
-    case 'boolean':
     case 'object':
       // console.log('binding children:', data, '-->', node.childNodes);
       bindChildren(node, data, directives);
@@ -102,6 +105,7 @@ function bind(node, data, directives) {
 
 function bindChildren(node, data, directives) {
   var values = interpolateData.call(node, data, directives);
+  if (!directives) directives = {};
   var key;
   for (var child = node.firstChild; child; child = child.nextSibling) {
     // console.log('child:', child);
@@ -121,7 +125,8 @@ function bindChildren(node, data, directives) {
 
     if (child.hasAttribute('data-each')) {
       key = child.getAttribute('data-each');
-      var list = coalesce(data[key], directives[key]);
+      var list = access.call(child, key, data);
+      list = coalesce(list, directives[key]);
       if (Array.isArray(list)) {
         // console.log('bind array:', list, '->', child, directives[key]);
         bindArray(child, list, directives[key]);
@@ -254,4 +259,10 @@ function coalesce() {
     var a = arguments[i];
     if (a !== null && typeof a !== 'undefined') return a;
   }
+}
+
+function boolMap(values) {
+  return values.reduce(function(map, value) {
+    return map[value] = true, map;
+  }, {});
 }
