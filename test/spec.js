@@ -4,22 +4,22 @@ var assert = require('assert');
 describe('tagalong', function() {
 
   describe('scalar binding', function() {
-    it('binds a scalar to element text', function() {
+
+    it('binds a string to element text', function() {
       var el = document.createElement('span');
       tagalong(el, 'foo');
       assert.equal(el.textContent, 'foo');
     });
-  });
+
+    it('binds a number to element text', function() {
+      var el = document.createElement('span');
+      tagalong(el, 5);
+      assert.equal(el.textContent, '5');
+    });
+
+  }); // scalar binding
 
   describe('object binding', function() {
-
-    xit('binds a key to a classed element', function() {
-      var el = document.createElement('div');
-      var span = el.appendChild(document.createElement('span'));
-      span.className = 'foo';
-      tagalong(el, {foo: 'bar'});
-      assert.equal(span.textContent, 'bar');
-    });
 
     it('binds a key to an element with data-bind="key"', function() {
       var el = document.createElement('div');
@@ -34,6 +34,14 @@ describe('tagalong', function() {
       var span = el.appendChild(document.createElement('span'));
       span.setAttribute('data-bind', 'Some Key');
       tagalong(el, {'Some Key': 'bar'});
+      assert.equal(span.textContent, 'bar');
+    });
+
+    xit('binds a key to a classed element', function() {
+      var el = document.createElement('div');
+      var span = el.appendChild(document.createElement('span'));
+      span.className = 'foo';
+      tagalong(el, {foo: 'bar'});
       assert.equal(span.textContent, 'bar');
     });
 
