@@ -24,7 +24,6 @@
   },
   "devDependencies": {
     "browserify": "^10.2.6",
-    "jsdom": "^3.1.2",
     "karma": "^0.12.37",
     "karma-browserify": "^4.2.1",
     "karma-mocha": "^0.2.0",
