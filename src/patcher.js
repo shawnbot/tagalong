@@ -29,8 +29,14 @@ function patcher(node) {
 
 function textPatcher(node) {
   var value = node.nodeValue;
-  return function() {
-    patchText(value);
+  return function(data) {
+    if (isScalar(data)) {
+      debug('text patch:', data);
+      patchText(data);
+    } else {
+      debug('text node:', value);
+      dom.text(value);
+    }
   };
 }
 
