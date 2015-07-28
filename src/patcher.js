@@ -128,20 +128,22 @@ function elementPatcher(node, onlyChildren) {
 
     if (key) {
       var result = resolveKey.call(node, key, data, directives);
-      // console.log('resolve key:', data, key, '->', result);
+      debug('resolve key:', key, [data, directives], '->', result);
       data = result.data;
       directives = result.directives;
       if (each) data = listify(data);
     }
 
     if (Array.isArray(data)) {
+      debug('+ patching array:', data, node.innerHTML);
       return data.forEach(function(d) {
         patch(d, directives);
       });
     } else if (each) {
-      // console.warn('not repeating each!', data, key);
+      debug('not repeating each!', data, key);
     }
 
+    debug('+ patching:', node.nodeName, data, directives);
     return patch(data, directives);
   };
 }
@@ -196,20 +198,23 @@ function resolver(expr) {
 }
 
 function resolveKey(key, data, directives) {
-  if (directives && typeof directives === 'object') {
+  if (isObject(directives)) {
     var dotted = DOT_PREFIX + key;
     if (has.call(directives, dotted)) {
+      debug('resolving dotted directive:', key, data);
       return resolveDirective
         .call(this, directives[dotted], resolve(data, key), key);
     } else if (has.call(directives, key)) {
       var resolved = resolve(data, key);
       if (resolved !== undefined) data = resolved;
+      debug('resolving directive:', directives[key], data);
       return resolveDirective
         .call(this, directives[key], data, key, directives);
     }
   }
 
   if (data && typeof data === 'object') {
+    debug('resolving data:', data, key);
     return {
       data: resolve(data, key),
       directives: directives
@@ -244,6 +249,7 @@ function getAttributes(attrs, data, directives) {
       }
     }
   }
+  debug('attributes:', out);
   return Object.keys(out).reduce(function(list, key) {
     if (key in SKIP_ATTRIBUTES) return list;
     var value = out[key];
