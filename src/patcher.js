@@ -48,16 +48,19 @@ function patchText(text) {
 }
 
 function childPatcher(node) {
-  var ops = [];
-  for (var child = node.firstChild; child; child = child.nextSibling) {
-    ops.push(patcher(child));
-  };
+  var ops = [].map.call(node.childNodes, patcher);
   var len = ops.length;
-  return function() {
-    for (var i = 0; i < len; i++) {
-      ops[i].apply(this, arguments);
-    }
-  };
+  return len
+    ? function patchDeep(data) {
+        for (var i = 0; i < len; i++) {
+          ops[i].apply(this, arguments);
+        }
+      }
+    : function patchShallow(data) {
+        if (isScalar(data)) {
+          patchText(data);
+        }
+      };
 }
 
 function elementPatcher(node) {
