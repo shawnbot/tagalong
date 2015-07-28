@@ -1,7 +1,5 @@
-var tagalong = require('../').bind;
+var tagalong = require('../');
 var assert = require('assert');
-
-return;
 
 describe('tagalong', function() {
 
@@ -10,7 +8,7 @@ describe('tagalong', function() {
     it('binds a string to element text', function() {
       var el = document.createElement('span');
       tagalong(el, 'foo');
-      assert.equal(el.outerHTML, '<span>foo</span>');
+      assert.equal(el.textContent, 'foo');
     });
 
     it('binds a number to element text', function() {
@@ -49,18 +47,19 @@ describe('tagalong', function() {
 
     describe('@attribute', function() {
 
-      xit('binds attributes with "@attr" directives as strings', function() {
+      it('binds attributes with "@attr" directives as strings', function() {
         var div = document.createElement('div');
         var span = div.appendChild(document.createElement('span'));
-        span.setAttribute('data-bind', '.');
         tagalong(div, {foo: 'bar'}, {'@id': 'foo'});
         assert.equal(div.firstChild.id, 'bar');
       });
 
-      xit('binds attributes with "@attr" directives as functions', function() {
+      it('binds attributes with "@attr" directives as functions', function() {
         var div = document.createElement('div');
+        var span = div.appendChild(document.createElement('span'));
         tagalong(div, {foo: 'bar'}, {'@id': function(d) { return d.foo + '_'; }});
-        assert.equal(div.id, 'bar_');
+        // console.log(div.outerHTML);
+        assert.equal(div.querySelector('span').id, 'bar_');
       });
 
       /*
@@ -99,7 +98,7 @@ describe('tagalong', function() {
       it('interpolates key strings from directives', function() {
         var div = document.createElement('div');
         var span = div.appendChild(document.createElement('span'));
-        span.className = 'x';
+        span.setAttribute('data-bind', 'x');
         tagalong(div, {y: 'foo'}, {x: 'y'});
         assert.equal(div.firstChild.textContent, 'foo');
       });
@@ -107,9 +106,9 @@ describe('tagalong', function() {
       it('interpolates object-nested directives ({x:{y:{}})', function() {
         var div = document.createElement('div');
         var span = div.appendChild(document.createElement('span'));
-        span.className = 'x';
+        span.setAttribute('data-bind', 'x');
         var i = span.appendChild(document.createElement('i'));
-        i.className = 'y';
+        i.setAttribute('data-bind', 'y');
         tagalong(div, {x: {foo: 'bar'}}, {x: {y: 'foo'}});
         assert.equal(div.querySelector('i').textContent, 'bar');
       });
@@ -129,18 +128,19 @@ describe('tagalong', function() {
       it('interpolates functions as directives', function() {
         var div = document.createElement('div');
         var span = div.appendChild(document.createElement('span'));
-        span.className = 'x';
+        span.setAttribute('data-bind', 'x');
         tagalong(div, {y: 'foo'}, {x: function(d) { return d.y; }});
         assert.equal(div.firstChild.textContent, 'foo');
       });
 
-      it('interpolates nested directives', function() {
+      xit('interpolates nested directives', function() {
         var div = document.createElement('div');
         var span = div.appendChild(document.createElement('span'));
-        span.className = 'x';
+        span.setAttribute('data-bind', 'x');
         var b = span.appendChild(document.createElement('b'));
-        b.className = 'y';
+        b.setAttribute('data-bind', 'y');
         tagalong(div, {y: 'foo'}, {x: {y: 'y'}});
+        // console.log(div.outerHTML);
         assert.equal(div.querySelector('b').textContent, 'foo');
       });
 
@@ -154,18 +154,20 @@ describe('tagalong', function() {
       var ul = document.createElement('ul');
       var li = ul.appendChild(document.createElement('li'));
       tagalong(ul, ['foo', 'bar']);
+      // console.log(ul.outerHTML);
       var lis = ul.querySelectorAll('li');
       assert.equal(lis.length, 2);
       assert.equal(lis[0].textContent, 'foo');
       assert.equal(lis[1].textContent, 'bar');
     });
 
-    it('binds a array by property name', function() {
+    it('binds an array by property name', function() {
       var div = document.createElement('div');
       var ul = div.appendChild(document.createElement('ul'));
-      ul.className = 'items';
       var li = ul.appendChild(document.createElement('li'));
+      li.setAttribute('data-each', 'items');
       tagalong(div, {items: ['foo', 'bar']});
+      // console.log(div.innerHTML);
       var lis = div.querySelectorAll('li');
       assert.equal(lis.length, 2);
       assert.equal(lis[0].textContent, 'foo');
@@ -175,9 +177,9 @@ describe('tagalong', function() {
     it('binds a array by property name and object key', function() {
       var div = document.createElement('div');
       var ul = div.appendChild(document.createElement('ul'));
-      ul.className = 'items';
       var li = ul.appendChild(document.createElement('li'));
-      li.appendChild(document.createElement('span')).className = 'value';
+      ul.setAttribute('data-bind', 'items');
+      li.appendChild(document.createElement('span')).setAttribute('data-bind', 'value');
       tagalong(div, {
         items: [
           {value: 'foo'},
@@ -193,9 +195,9 @@ describe('tagalong', function() {
     it('can bind to empty arrays, then non-empty ones', function() {
       var div = document.createElement('div');
       var ul = div.appendChild(document.createElement('ul'));
-      ul.className = 'items';
       var li = ul.appendChild(document.createElement('li'));
-      li.appendChild(document.createElement('span')).className = 'value';
+      li.setAttribute('data-each', 'items');
+      li.appendChild(document.createElement('span')).setAttribute('data-bind', 'value');
 
       var data = {items: []};
       var rebind = tagalong(div, data);
@@ -212,7 +214,7 @@ describe('tagalong', function() {
       var list = document.createElement('ul');
       var item = list.appendChild(document.createElement('li'));
       var link = item.appendChild(document.createElement('a'));
-      link.className = 'link';
+      link.setAttribute('data-bind', 'link');
 
       var data = [
         {text: 'foo', href: 'foo.html'},
@@ -220,11 +222,13 @@ describe('tagalong', function() {
       ];
       tagalong(list, data, {
         link: {
-          '@text': 'text',
+          text: 'text',
           '@href': 'href'
         }
       });
+      // console.log(list.outerHTML);
       var links = list.querySelectorAll('li a');
+      assert.equal(links.length, 2);
       assert.equal(links[0].getAttribute('href'), 'foo.html');
       assert.equal(links[1].getAttribute('href'), 'bar.html');
       assert.equal(links[0].textContent, 'foo');
@@ -233,21 +237,23 @@ describe('tagalong', function() {
     it('binds objects as key/value pairs with data-each', function() {
       var div = document.createElement('div');
       var ul = div.appendChild(document.createElement('ul'));
-      ul.setAttribute('data-each', '.');
       var li = ul.appendChild(document.createElement('li'));
-      li.appendChild(document.createElement('b')).className = 'key';
+      li.setAttribute('data-each', 'values');
+      li.appendChild(document.createElement('b')).setAttribute('data-each', 'key');
       li.appendChild(document.createTextNode(' = '));
-      li.appendChild(document.createElement('b')).className = 'value';
+      li.appendChild(document.createElement('i')).setAttribute('data-each', 'value');
 
       var data = {
-        foo: 'bar',
-        bar: 'baz'
+        values: {
+          foo: 'bar',
+          bar: 'baz'
+        }
       };
       tagalong(div, data);
 
       var lis = div.querySelectorAll('li');
-      assert.equal(lis[0].innerHTML, '<b class="key">foo</b> = <b class="value">bar</b>');
-      assert.equal(lis[1].innerHTML, '<b class="key">bar</b> = <b class="value">baz</b>');
+      assert.equal(lis[0].innerHTML, '<b>foo</b> = <i>bar</i>');
+      assert.equal(lis[1].innerHTML, '<b>bar</b> = <i>baz</i>');
     });
 
   }); // array binding
