@@ -32,6 +32,7 @@ module.exports = function(config) {
     plugins: ['karma-*'],
 
     client: {
+      captureConsole: true,
       mocha: {
         bail: true
       }
