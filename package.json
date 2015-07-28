@@ -20,6 +20,7 @@
   "repository": "shawnbot/tagalong",
   "license": "CC0",
   "dependencies": {
+    "dotmap": "^0.1.0",
     "incremental-dom": "^0.1.0"
   },
   "devDependencies": {
