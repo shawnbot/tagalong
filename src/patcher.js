@@ -63,7 +63,7 @@ function childPatcher(node) {
       };
 }
 
-function elementPatcher(node) {
+function elementPatcher(node, onlyChildren) {
   var condition = node.hasAttribute(T_IF)
     ? createCondition(node.getAttribute(T_IF))
     : null;
@@ -85,7 +85,9 @@ function elementPatcher(node) {
     return attrs;
   }, {});
 
-  var patchChildren = isVoid
+  var hasChildren = node.childNodes.length > 0;
+
+  var patchChildren = (isVoid || !hasChildren)
     ? noop
     : childPatcher(node);
 
@@ -96,7 +98,8 @@ function elementPatcher(node) {
     if (isVoid) {
       dom.elementVoid(name, '', attrs);
     } else {
-      dom.elementOpen(name, '', attrs);
+      if (!onlyChildren) dom.elementOpen(name, '', attrs);
+      debug('patch(', name, data, onlyChildren, ')');
       if (directives && has.call(directives, TEXT_DIRECTIVE)) {
         // if there's a text directive, just use that
         var resolved = resolveDirective
@@ -105,11 +108,15 @@ function elementPatcher(node) {
       } else if (key && !isObject(data)) {
         // or, if there's scalar data, use that
         patchText(data);
-      } else {
+      } else if (!onlyChildren && isScalar(data)) {
+        // XXX wtf, this is dumb
+        patchText(data);
+      } else if (hasChildren) {
+        debug('patching children!');
         // otherwise, patch the child nodes
         patchChildren(data, directives);
       }
-      dom.elementClose(name);
+      if (!onlyChildren) dom.elementClose(name);
     }
   };
 
@@ -356,12 +363,16 @@ function boolMap(values) {
   }, {});
 }
 
-module.exports = function patchRoot(node, childrenOnly) {
+function debug() {
+  if (module.exports.debug) {
+    console.warn.apply(console, arguments);
+  }
+}
+
+module.exports = function patchRoot(node, onlyChildren) {
   switch (node.nodeType) {
     case 1: // element node
-      return (childrenOnly === true)
-        ? childPatcher(node)
-        : elementPatcher(node);
+      return elementPatcher(node, onlyChildren);
 
     case 3: // text node
       return textPatcher(node);
