@@ -133,6 +133,7 @@ describe('tagalong', function() {
         assert.equal(div.firstChild.textContent, 'foo');
       });
 
+      // XXX not sure what the problem is here...
       xit('interpolates nested directives', function() {
         var div = document.createElement('div');
         var span = div.appendChild(document.createElement('span'));
