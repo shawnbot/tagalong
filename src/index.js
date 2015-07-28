@@ -8,9 +8,10 @@ var dom = require('incremental-dom');
  */
 function bind(node, data, directives) {
   node = coerceNode(node);
-  var template = compile(node);
-  var render = function(data, directives) {
-    return template(node, data, directives);
+  var template = compile(node, true);
+  var render = function(_data, _directives) {
+    // console.log('render(', _data, ') ->', node.nodeName);
+    return template(node, _data, _directives);
   };
   render(data, directives);
   return render;
@@ -20,9 +21,10 @@ function bind(node, data, directives) {
  * compile a template and return a function that renders it into a
  * target element with data and directives.
  */
-function compile(node) {
-  var patch = patcher(coerceNode(node));
+function compile(node, onlyChildren) {
+  var patch = patcher(coerceNode(node), onlyChildren !== false);
   return function(target, data, directives) {
+    patcher.debug = bind.debug;
     target = coerceNode(target);
     dom.patch(target, function() {
       patch(data, directives);
@@ -46,8 +48,8 @@ function coerceNode(nodeOrSelector) {
     : nodeOrSelector;
 }
 
-module.exports = {
-  bind: bind,
-  compile: compile,
-  render: render
-};
+bind.compile = compile;
+bind.render = render;
+bind.debug = false;
+
+module.exports = bind;
