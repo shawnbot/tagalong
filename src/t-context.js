@@ -1,7 +1,7 @@
 import property from './property';
 import evaluate from './evaluate';
 import {createRenderFunction} from './render';
-import Immutable, {Map, List} from 'immutable';
+// import Immutable, {Map, List} from 'immutable';
 
 const RENDER = Symbol('template-render');
 
@@ -31,14 +31,6 @@ let TContext = document.registerElement('t-context', {
           let data = evaluate(expr);
           console.log('setting data: (', expr, ') ->', data);
           this.data = data;
-        }
-      }},
-
-      mutate: {value: function(mutate) {
-        let data = Immutable.fromJS(this.data);
-        let mutated = mutate(data);
-        if (mutated !== data) {
-          this.data = mutated.toJS();
         }
       }},
 
