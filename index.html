@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <script src="bundle.js"></script>
+    <script src="tagalong.js"></script>
   </head>
   <body>
-    <t-context data="{items:[{name:'foo',size:100},{name:'bar',size:200},{name:'baz',size:50}]}">
+    <t-template data="{items:[{name:'foo',size:100},{name:'bar',size:200},{name:'baz',size:50}]}">
       <h1>
         <span t-text="items.length">0</span>
         item<span t-if="items.length !== 1">s</span>
@@ -19,6 +19,6 @@
           <span t-text="name">hi</span> (<span t-text="size">0</span>)
         </li>
       </ul>
-    </t-context>
+    </t-template>
   </body>
 </html>
