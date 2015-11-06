@@ -16,7 +16,14 @@ var VOID_ELEMENTS = [
   'wbr'
 ];
 
-module.exports = createRenderFunction;
+module.exports = {
+  create: createRenderFunction,
+  render: function(root, data) {
+    var render = createRenderFunction(root);
+    render(data);
+    return render;
+  }
+};
 
 function createRenderFunction(root) {
   var render = createRenderer(root);

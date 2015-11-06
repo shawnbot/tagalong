@@ -1,6 +1,6 @@
 var property = require('./property');
 var evaluate = require('./evaluate').evaluate;
-var createRenderer = require('./render');
+var createRenderer = require('./render').create;
 
 var RENDER = '__render';
 
