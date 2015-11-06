@@ -1,16 +1,16 @@
-import {isArrow, parseArrow} from './arrow';
+var arrow = require('./arrow');
 
-export default function evaluate(expression, context) {
-  let fn = evaluator(expression);
+var evaluate = function(expression, context) {
+  var fn = evaluator(expression);
   return fn.call(this, context);
 };
 
-export function evaluator(expression) {
-  if (isArrow(expression)) {
+var evaluator = function(expression) {
+  if (arrow.is(expression)) {
     return parseArrow(expression);
   }
 
-  let symbol = 'd' + Date.now();
+  var symbol = 'd' + Date.now();
   // '.' is just the identity function
   if (expression === '.') {
     return function identity(d) { return d; };
@@ -20,8 +20,15 @@ export function evaluator(expression) {
   }
   return new Function(symbol, [
     // 'console.info("', symbol, ' = ", ', symbol, ', "', expression, '"); ',
+    'try { ',
     'with (', symbol, ' || {}) {',
     '  return ', expression, ';',
-    '}'
+    '} ',
+    '} catch (error) { }'
   ].join(''));
 };
+
+module.exports = {
+  evaluate: evaluate,
+  evaluator: evaluator,
+}

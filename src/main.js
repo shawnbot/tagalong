@@ -1,9 +1,17 @@
-import 'document-register-element';
-import TContext from './t-context';
-import {createRenderFunction} from './render';
+require('document-register-element');
+
+var Template = require('./t-template');
+var createRenderer = require('./render');
+
+var render = function(node, data) {
+  var _render = createRenderer(node);
+  _render(data);
+  return _render;
+};
 
 window.tagalong = {
-  TContext,
-  createRenderFunction
+  Template: Template,
+  createRenderer: createRenderer,
+  render: render
 };
 

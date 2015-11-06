@@ -1,15 +1,15 @@
-export default function property(read, write, value) {
+module.exports = function property(read, write, value) {
   return {
     enumerable: false,
 
-    get() {
+    get: function() {
       return read ? read.call(this, value) : value;
     },
 
-    set(v) {
+    set: function(v) {
       if (v !== value) {
-        let previous = value;
-        return write.call(this, value = v, previous);
+        var previous = value;
+        return value = write.call(this, v, previous);
       }
     }
   };

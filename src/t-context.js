@@ -1,13 +1,12 @@
-import property from './property';
-import evaluate from './evaluate';
-import {createRenderFunction} from './render';
-// import Immutable, {Map, List} from 'immutable';
+var property = require('./property');
+var evaluate = require('./evaluate').evaluate;
+var createRenderer = require('./render');
 
-const RENDER = Symbol('template-render');
+var RENDER = '__render';
 
-const DATA_ATTR = 'data';
+var DATA_ATTR = 'data';
 
-let TContext = document.registerElement('t-context', {
+var TContext = document.registerElement('t-context', {
   prototype: Object.create(
     HTMLElement.prototype,
     {
@@ -27,20 +26,17 @@ let TContext = document.registerElement('t-context', {
       update: {value: function() {
         console.log('updating...');
         if (this.hasAttribute(DATA_ATTR)) {
-          let expr = this.getAttribute(DATA_ATTR);
-          let data = evaluate(expr);
+          var expr = this.getAttribute(DATA_ATTR);
+          var data = evaluate(expr);
           console.log('setting data: (', expr, ') ->', data);
           this.data = data;
         }
       }},
 
-      getParentContext: {value: function() {
-      }},
-
       render: {value: function() {
-        let render = this[RENDER];
+        var render = this[RENDER];
         if (!render) {
-          render = this[RENDER] = createRenderFunction(this);
+          render = this[RENDER] = createRenderer(this);
         }
         render(this.data);
       }},
@@ -56,7 +52,8 @@ let TContext = document.registerElement('t-context', {
         },
         function setTemplateData(data, previous) {
           if (data !== previous) {
-            return this.render();
+            this.render();
+            return data;
           }
         },
         {}

@@ -1,39 +1,35 @@
-import evaluate, {evaluator} from './evaluate';
+var code = require('./evaluate');
+var incremental = require('incremental-dom');
+var xp = require('./evaluate');
 
-import {
-  elementOpen,
-  elementClose,
-  elementVoid,
-  text,
-  patch
-} from 'incremental-dom';
+var T_NAMESPACE = 't-';
+var T_IF = T_NAMESPACE + 'if';
+var T_EACH = T_NAMESPACE + 'each';
+var T_TEXT = T_NAMESPACE + 'text';
+var T_FOREACH = T_NAMESPACE + 'foreach';
 
-const T_NAMESPACE = 't-';
-const T_IF = T_NAMESPACE + 'if';
-const T_EACH = T_NAMESPACE + 'each';
-const T_TEXT = T_NAMESPACE + 'text';
-const T_FOREACH = T_NAMESPACE + 'foreach';
+var CONTROL_ATTRS = [T_IF, T_EACH, T_FOREACH, T_TEXT];
 
-const CONTROL_ATTRS = new Set([T_IF, T_EACH, T_FOREACH, T_TEXT]);
-
-const VOID_ELEMENTS = new Set([
+var VOID_ELEMENTS = [
   'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img',
   'input', 'keygen', 'link', 'meta', 'param', 'source', 'track',
   'wbr'
-]);
+];
 
-export function createRenderFunction(root) {
-  let render = createRenderer(root);
+module.exports = createRenderFunction;
+
+function createRenderFunction(root) {
+  var render = createRenderer(root);
   return function _render(data) {
     // console.log('rendering with data:', data);
-    return patch(root, render.bind(this, data));
+    return incremental.patch(root, render.bind(this, data));
   };
-};
+}
 
 function createRenderer(root) {
-  let calls = [];
+  var calls = [];
   for (
-    let child = root.firstChild; child;
+    var child = root.firstChild; child;
     child = child.nextSibling
   ) {
     switch (child.nodeType) {
@@ -47,59 +43,63 @@ function createRenderer(root) {
   }
   return function patch(data) {
     // console.log('patching:', root, 'with', data);
-    calls.forEach(fn => fn(data));
+    calls.forEach(function(fn) {
+      fn(data);
+    });
   };
 }
 
 function createTextRenderer(node) {
   // TODO: expand {{ expressions }} ?
-  return (data) => text(node.nodeValue);
+  return function(data) {
+    incremental.text(node.nodeValue);
+  };
 }
 
 function createElementRenderer(node) {
-  let name = node.nodeName.toLowerCase();
+  var name = node.nodeName.toLowerCase();
 
-  let isVoid = isElementVoid(name);
-  let attrMap = getAttributeMap(node);
+  var isVoid = isElementVoid(name);
+  var attrMap = getAttributeMap(node);
 
-  let condition = node.hasAttribute(T_IF)
-    ? evaluator(node.getAttribute(T_IF))
+  var condition = node.hasAttribute(T_IF)
+    ? xp.evaluator(node.getAttribute(T_IF))
     : null;
 
-  let renderChildren;
+  var renderChildren;
 
   // <span t-text="some.value"></span>
-  let textExpression = node.getAttribute(T_TEXT);
+  var textExpression = node.getAttribute(T_TEXT);
   if (textExpression) {
-    let getText = evaluator(textExpression);
+    var getText = xp.evaluator(textExpression);
     renderChildren = function(data) {
-      let value = getText(data);
+      var value = getText(data);
       if (value !== null && value !== undefined) {
-        text(String(value));
+        incremental.text(String(value));
       }
     };
   } else {
     renderChildren = createRenderer(node);
   }
 
-  let render = function(data) {
+  var render = function(data) {
     // console.log('rendering', node, 'with data:', data);
     if (condition && !condition(data)) {
       return false;
     }
 
-    let attrs = interpolateAttributes(attrMap, data);
+    var attrs = interpolateAttributes(attrMap, data);
     if (isVoid) {
-      elementVoid(name, '', attrs);
+      incremental.elementVoid(name, '', attrs);
     } else {
-      elementOpen(name, '', attrs);
+      incremental.elementOpen(name, '', attrs);
       renderChildren(data);
-      elementClose(name);
+      incremental.elementClose(name);
     }
   };
 
-  let eachExpression = node.getAttribute(T_EACH);
-  let forEachExpression = node.getAttribute(T_FOREACH);
+  var eachExpression = node.getAttribute(T_EACH);
+  var forEachExpression = node.getAttribute(T_FOREACH);
 
   // <ul><li t-each="items">{{ . }}</li></ul>
   if (eachExpression) {
@@ -117,34 +117,35 @@ function createElementRenderer(node) {
 }
 
 function renderEach(expression, render) {
-  return (data) => {
-    let values = evaluate(expression, data);
+  return function(data) {
+    var values = xp.evaluate(expression, data);
     forEach(values, render);
   };
 }
 
 function getAttributeMap(node) {
-  let map = new Map();
-  let attrs = node.attributes;
-  for (let i = 0; i < attrs.length; i++) {
-    let attr = attrs[i];
-    let name = String(attr.name);
-    if (CONTROL_ATTRS.has(name)) {
+  var map = {};
+  var attrs = node.attributes;
+  for (var i = 0; i < attrs.length; i++) {
+    var attr = attrs[i];
+    var name = String(attr.name);
+    if (CONTROL_ATTRS.indexOf(name) > -1) {
       // console.info('skipping control attribute', name, 'for', node);
       continue;
     } else if (name.indexOf(T_NAMESPACE) === 0) {
-      let getter = evaluator(attr.value);
-      map.set(name.substr(T_NAMESPACE.length), getter);
+      var getter = xp.evaluator(attr.value);
+      map[name.substr(T_NAMESPACE.length)] = getter;
     } else {
-      map.set(name, attr.value);
+      map[name] = attr.value;
     }
   }
   return map;
 }
 
 function interpolateAttributes(attrMap, data) {
-  let attrs = [];
-  for (let [key, value] of attrMap) {
+  var attrs = [];
+  for (var key in attrMap) {
+    var value = attrMap[key];
     attrs.push(key, (typeof value === 'function')
       ? value(data, key)
       : String(value));
@@ -153,7 +154,7 @@ function interpolateAttributes(attrMap, data) {
 }
 
 function isElementVoid(name) {
-  return VOID_ELEMENTS.has(name);
+  return VOID_ELEMENTS.indexOf(name) > -1;
 }
 
 function forEach(data, fn) {
