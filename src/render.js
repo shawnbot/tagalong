@@ -82,7 +82,7 @@ function createElementRenderer(node) {
     var getText = xp.evaluator(textExpression);
     renderChildren = function(data) {
       var value = getText(data);
-      if (value !== null && value !== undefined) {
+      if (defined(value)) {
         incremental.text(String(value));
       }
     };
