@@ -7,7 +7,7 @@ with special `t-` attributes. Given this HTML:
 <div id="people">
   <h1>
     <span t-text="items.length">0</span>
-    Item<span t-if="items.length !== 1">s</span>
+    Member<span t-if="items.length !== 1">s</span>
   </h1>
   <ul>
     <li t-each="items">
@@ -38,7 +38,7 @@ Or, you can use the `<t-template>` [custom element]:
 <t-template id="people">
   <h1>
     <span t-text="items.length">0</span>
-    Item<span t-if="items.length !== 1">s</span>
+    Member<span t-if="items.length !== 1">s</span>
   </h1>
   <ul>
     <li t-each="items">
