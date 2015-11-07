@@ -27,6 +27,18 @@ describe('render()', function() {
     assert.equal(body.innerHTML, '<div>bar</div>');
   });
 
+  it('accepts a CSS selector as a template target', function() {
+    body.innerHTML = '<div t-text="foo"></div>';
+    tagalong.render('body', {foo: 'bar'});
+    assert.equal(body.innerHTML, '<div>bar</div>');
+  });
+
+  it('throws an error when it cannot find its target', function() {
+    assert.throws(function() {
+      tagalong.render('#blargh', {foo: 'bar'});
+    });
+  });
+
   it('returns a render function for updates', function() {
     body.innerHTML = '<div t-text="foo"></div>';
     var render = tagalong.render(body, {foo: 'bar'});
