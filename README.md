@@ -11,8 +11,7 @@ with special `t-` attributes. Given this HTML:
   </h1>
   <ul>
     <li t-each="items">
-      <span t-text="name">Rosie</span>
-      the
+      <span t-text="name">Rosie</span> the
       <span t-text="occupation">Riveter</span>
     </li>
   </ul>
@@ -41,8 +40,7 @@ Or, you can use the `<t-template>` [custom element]:
   </h1>
   <ul>
     <li t-each="items">
-      <span t-text="name">Rosie</span>
-      the
+      <span t-text="name">Rosie</span> the
       <span t-text="occupation">Riveter</span>
     </li>
   </ul>
