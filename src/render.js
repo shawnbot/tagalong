@@ -1,6 +1,7 @@
 var code = require('./evaluate');
 var incremental = require('incremental-dom');
 var xp = require('./evaluate');
+var transform = require('./transform');
 
 var T_NAMESPACE = 't-';
 var T_IF = T_NAMESPACE + 'if';
@@ -141,7 +142,16 @@ function getAttributeMap(node) {
       continue;
     } else if (name.indexOf(T_NAMESPACE) === 0) {
       var getter = xp.evaluator(attr.value);
-      map[name.substr(T_NAMESPACE.length)] = getter;
+      name = name.substr(T_NAMESPACE.length);
+      switch (name) {
+        case 'class':
+          getter = transform.className(getter);
+          break;
+        case 'style':
+          getter = transform.style(getter);
+          break;
+      }
+      map[name] = getter;
     } else {
       map[name] = attr.value;
     }
@@ -153,9 +163,12 @@ function interpolateAttributes(attrMap, data) {
   var attrs = [];
   for (var key in attrMap) {
     var value = attrMap[key];
-    attrs.push(key, (typeof value === 'function')
-      ? value(data, key)
-      : String(value));
+    if (typeof value === 'function') {
+      value = value.call(this, data, key);
+    }
+    if (defined(value)) {
+      attrs.push(key, value);
+    }
   }
   return attrs;
 }
@@ -166,4 +179,8 @@ function isElementVoid(name) {
 
 function forEach(data, fn) {
   return data.forEach(fn, this);
+}
+
+function defined(value) {
+  return value !== null && value !== undefined;
 }
