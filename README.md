@@ -29,7 +29,6 @@ tagalong.render('#people', {
     {name: 'Jill', occupation: 'Welder'},
   ]
 });
-</script>
 ```
 
 Or, you can use the `<t-template>` [custom element]:
