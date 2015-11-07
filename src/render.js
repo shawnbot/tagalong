@@ -27,6 +27,13 @@ module.exports = {
 };
 
 function createRenderFunction(root) {
+  if (typeof root === 'string') {
+    var selector = root;
+    root = document.querySelector(selector);
+    if (!root) {
+      throw new Error('no element found with selector: "' + selector + '"');
+    }
+  }
   var render = createRenderer(root);
   return function _render(data) {
     // console.log('rendering with data:', data);
