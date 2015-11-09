@@ -13,7 +13,9 @@
     "webpack": "^1.12.3"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "start": "webpack --watch --config webpack.conf.js",
+    "build": "webpack --config webpack.conf.js"
   },
   "repository": {
     "type": "git",
