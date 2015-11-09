@@ -5,11 +5,12 @@ var transform = require('./transform');
 
 var T_NAMESPACE = 't-';
 var T_IF = T_NAMESPACE + 'if';
+var T_ELSE = T_NAMESPACE + 'else';
 var T_EACH = T_NAMESPACE + 'each';
 var T_TEXT = T_NAMESPACE + 'text';
 var T_FOREACH = T_NAMESPACE + 'foreach';
 
-var CONTROL_ATTRS = [T_IF, T_EACH, T_FOREACH, T_TEXT];
+var CONTROL_ATTRS = [T_IF, T_ELSE, T_EACH, T_FOREACH, T_TEXT];
 
 var VOID_ELEMENTS = [
   'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img',
@@ -80,6 +81,13 @@ function createElementRenderer(node) {
   var condition = node.hasAttribute(T_IF)
     ? xp.evaluator(node.getAttribute(T_IF))
     : null;
+
+  if (node.hasAttribute(T_ELSE)) {
+    if (condition) throw new Error('element has both t-if and t-else attributes');
+    var ifSibling = getPreviousSibling(node, '[' + T_IF + ']');
+    if (!ifSibling) throw new Error('element with t-else has no matching t-if sibling');
+    condition = not(xp.evaluator(ifSibling.getAttribute(T_IF)));
+  }
 
   var renderChildren;
 
@@ -180,6 +188,14 @@ function interpolateAttributes(attrMap, data) {
   return attrs;
 }
 
+function getPreviousSibling(node, selector) {
+  while (node = node.previousSibling) {
+    if (!node) break;
+    if (node.matches(selector)) return node;
+  }
+  throw new Error('no previous sibling found matching: ' + selector);
+}
+
 function isElementVoid(name) {
   return VOID_ELEMENTS.indexOf(name) > -1;
 }
@@ -190,4 +206,10 @@ function forEach(data, fn) {
 
 function defined(value) {
   return value !== null && value !== undefined;
+}
+
+function not(fn) {
+  return function() {
+    return !fn.apply(this, arguments);
+  };
 }
