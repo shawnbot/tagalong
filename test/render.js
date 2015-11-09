@@ -103,4 +103,12 @@ describe('render()', function() {
     assert.equal(body.innerHTML, '<div>yes</div>');
   });
 
+  it('renders an if/else statement', function() {
+    body.innerHTML = '<div t-if="foo">yes</div><span t-else>no</span>';
+    var render = tagalong.render(body, {foo: 0});
+    assert.equal(body.innerHTML, '<span>no</span>');
+    render({foo: 1});
+    assert.equal(body.innerHTML, '<div>yes</div>');
+  });
+
 });
