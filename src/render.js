@@ -3,25 +3,29 @@ var incremental = require('incremental-dom');
 var xp = require('./evaluate');
 var transform = require('./transform');
 
+// our attribute namespace
 var T_NS = 't-';
+
 var T_AS = T_NS + 'as';
+var T_SKIP = T_NS + 'skip';
 var T_IF = T_NS + 'if';
 var T_ELSE = T_NS + 'else';
 var T_EACH = T_NS + 'each';
-var T_TEXT = T_NS + 'text';
 var T_FOREACH = T_NS + 'foreach';
 var T_SWITCH = T_NS + 'switch';
 var T_CASE = T_NS + 'case';
 var T_DEFAULT = T_NS + 'default';
 var T_WITH = T_NS + 'with';
-var T_SKIP = T_NS + 'skip';
+var T_TEXT = T_NS + 'text';
 
 var CONTROL_ATTRS = [
+  'as',
   'skip',
   'if', 'else',
   'each', 'foreach',
-  'text',
-  'switch', 'case', 'default'
+  'switch', 'case', 'default',
+  'with',
+  'text'
 ];
 
 var VOID_ELEMENTS = [
@@ -88,6 +92,11 @@ function createTextRenderer(node) {
 function createElementRenderer(node) {
   var name = node.nodeName.toLowerCase();
 
+  // this element will never be rendered if it has a truthy t-skip attribute
+  if (node.hasAttribute(T_SKIP)) {
+    return noop;
+  }
+
   var isVoid = isElementVoid(name);
   var attrMap = getAttributeMap(node);
 
@@ -120,42 +129,56 @@ function createElementRenderer(node) {
 
   var render = function(data) {
     // console.log('rendering', node, 'with data:', data);
-    if (condition && !condition(data)) {
+    if (condition && !condition.call(this, data)) {
       return false;
     }
 
-    var attrs = interpolateAttributes(attrMap, data);
+    var attrs = interpolateAttributes.call(this, attrMap, data);
     if (isVoid) {
       incremental.elementVoid(name, '', attrs);
     } else {
       incremental.elementOpen(name, '', attrs);
-      renderChildren(data);
+      renderChildren.call(this, data);
       incremental.elementClose(name);
     }
   };
 
   var eachExpression = node.getAttribute(T_EACH);
   var forEachExpression = node.getAttribute(T_FOREACH);
+  var switchExpression = node.getAttribute(T_SWITCH);
+  var withExpression = node.getAttribute(T_WITH);
 
-  // <ul><li t-each="items">{{ . }}</li></ul>
+  var symbol = node.getAttribute(T_AS);
+
   if (eachExpression) {
     // console.info('render each:', node, eachExpression);
-    render = renderEach(eachExpression, render);
-  // <ul t-foreach="items"><li>{{ . }}</li></ul>
+    render = renderEach(eachExpression, render, symbol);
   } else if (forEachExpression) {
     // console.info('render foreach:', node, forEachExpression);
-    renderChildren = renderEach(forEachExpression, renderChildren);
-  } else {
-    // console.info('render once:', node);
+    renderChildren = renderEach(forEachExpression, renderChildren, symbol);
+  } else if (withExpression) {
+    render = renderWith(withExpression, render, symbol);
+  } else if (switchExpression) {
+    // TODO
   }
 
   return render;
 }
 
-function renderEach(expression, render) {
+function renderEach(expression, render, symbol) {
+  var expr = xp.evaluator(expression);
   return function(data) {
-    var values = xp.evaluate(expression, data);
-    forEach(values, render);
+    var values = expr.call(this, data);
+    forEach.call(this, values, render, symbol);
+  };
+}
+
+function renderWith(expression, render, symbol) {
+  var expr = xp.evaluator(expression);
+  if (symbol) render = symbolSetter(symbol, render);
+  return function(data) {
+    data = expr.call(this, data);
+    render.call(this, data);
   };
 }
 
@@ -213,8 +236,36 @@ function isElementVoid(name) {
   return VOID_ELEMENTS.indexOf(name) > -1;
 }
 
-function forEach(data, fn) {
-  return data.forEach(fn, this);
+function forEach(data, fn, symbol) {
+  var previous;
+  var iterate = symbol
+    ? symbolSetter(symbol, fn)
+    : fn;
+
+  if (typeof data === 'object') {
+    if (Array.isArray(data)) {
+      return data.forEach(iterate, this);
+    }
+
+    var i = 0;
+    for (var key in data) {
+      if (data.hasOwnProperty(key)) {
+        iterate.call(this, {key: key, value: data[key]}, i++);
+      }
+    }
+  } else if (typeof data === 'string') {
+    return data.split('').forEach(iterate, this);
+  }
+
+  // throw new Error('unable to iterate over ' + (typeof data));
+}
+
+function symbolSetter(symbol, fn) {
+  return function(data) {
+    var previous = set(this, symbol, data);
+    if (fn) fn.call(this, data);
+    set(this, symbol, previous);
+  };
 }
 
 function defined(value) {
@@ -225,4 +276,17 @@ function not(fn) {
   return function() {
     return !fn.apply(this, arguments);
   };
+}
+
+function set(context, symbol, value) {
+  var previous = context[symbol];
+  if (value === undefined) {
+    delete context[symbol];
+  } else {
+    context[symbol] = value;
+  }
+  return previous;
+}
+
+function noop() {
 }
