@@ -206,7 +206,7 @@ Tagalong ships with a `<t-template>` [custom element]:
 </t-template>
 ```
 
-Then, set the data either by setting the `data` attribute (any JavaScript expression will do), or set the `data` DOM element property directly:
+Then, set the data either by setting the `data` attribute (any JavaScript expression will do), or set the `data` property directly:
 
 ```js
 document.getElementById('people').data = {
