@@ -21,8 +21,10 @@ var evaluator = function(expression) {
   return new Function(symbol, [
     // 'console.info("', symbol, ' = ", ', symbol, ', "', expression, '"); ',
     'try { ',
+    'with (this) {',
     'with (', symbol, ' || {}) {',
     '  return ', expression, ';',
+    '} ',
     '} ',
     '} catch (error) { }'
   ].join(''));
