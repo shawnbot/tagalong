@@ -12,20 +12,18 @@ var T_IF = T_NS + 'if';
 var T_ELSE = T_NS + 'else';
 var T_EACH = T_NS + 'each';
 var T_FOREACH = T_NS + 'foreach';
-var T_SWITCH = T_NS + 'switch';
-var T_CASE = T_NS + 'case';
-var T_DEFAULT = T_NS + 'default';
 var T_WITH = T_NS + 'with';
 var T_TEXT = T_NS + 'text';
 
 var CONTROL_ATTRS = [
-  'as',
-  'skip',
-  'if', 'else',
-  'each', 'foreach',
-  'switch', 'case', 'default',
+  'if',
+  'else',
+  'each',
+  'foreach',
   'with',
-  'text'
+  'text',
+  'as',
+  'skip'
 ];
 
 var VOID_ELEMENTS = [
@@ -145,7 +143,6 @@ function createElementRenderer(node) {
 
   var eachExpression = node.getAttribute(T_EACH);
   var forEachExpression = node.getAttribute(T_FOREACH);
-  var switchExpression = node.getAttribute(T_SWITCH);
   var withExpression = node.getAttribute(T_WITH);
 
   var symbol = node.getAttribute(T_AS);
@@ -158,8 +155,6 @@ function createElementRenderer(node) {
     renderChildren = renderEach(forEachExpression, renderChildren, symbol);
   } else if (withExpression) {
     render = renderWith(withExpression, render, symbol);
-  } else if (switchExpression) {
-    // TODO
   }
 
   return render;
@@ -265,7 +260,7 @@ function forEach(data, fn, symbol) {
 function symbolSetter(symbol, fn) {
   return function(data) {
     var previous = set(this, symbol, data);
-    if (fn) fn.call(this, data);
+    fn.call(this, data);
     set(this, symbol, previous);
   };
 }
