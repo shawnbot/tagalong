@@ -138,6 +138,16 @@ describe('render()', function() {
     });
   });
 
+  describe('text expressions', function() {
+    it('interoplates {{ expressions }}', function() {
+      body.innerHTML = 'Hello, {{ world }}!';
+      var render = tagalong.render(body, {world: 'Earth'});
+      assert.equal(body.innerHTML, 'Hello, Earth!');
+      render({world: 'world'});
+      assert.equal(body.innerHTML, 'Hello, world!');
+    });
+  });
+
   describe('expressions', function() {
 
     it('inherit scope from the calling context', function() {
