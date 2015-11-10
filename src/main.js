@@ -8,4 +8,3 @@ window.tagalong = {
   createRenderer: render.create,
   render: render.render
 };
-
