@@ -1,6 +1,7 @@
 var code = require('./evaluate');
 var incremental = require('incremental-dom');
 var xp = require('./evaluate');
+var interpolate = require('./interpolate');
 var transform = require('./transform');
 
 // our attribute namespace
@@ -81,9 +82,10 @@ function createRenderer(root) {
 }
 
 function createTextRenderer(node) {
-  // TODO: expand {{ expressions }} ?
+  var template = node.nodeValue;
   return function(data) {
-    incremental.text(node.nodeValue);
+    var text = interpolate.call(this, template, data);
+    incremental.text(defined(text) ? text : '');
   };
 }
 
