@@ -3,14 +3,26 @@ var incremental = require('incremental-dom');
 var xp = require('./evaluate');
 var transform = require('./transform');
 
-var T_NAMESPACE = 't-';
-var T_IF = T_NAMESPACE + 'if';
-var T_ELSE = T_NAMESPACE + 'else';
-var T_EACH = T_NAMESPACE + 'each';
-var T_TEXT = T_NAMESPACE + 'text';
-var T_FOREACH = T_NAMESPACE + 'foreach';
+var T_NS = 't-';
+var T_AS = T_NS + 'as';
+var T_IF = T_NS + 'if';
+var T_ELSE = T_NS + 'else';
+var T_EACH = T_NS + 'each';
+var T_TEXT = T_NS + 'text';
+var T_FOREACH = T_NS + 'foreach';
+var T_SWITCH = T_NS + 'switch';
+var T_CASE = T_NS + 'case';
+var T_DEFAULT = T_NS + 'default';
+var T_WITH = T_NS + 'with';
+var T_SKIP = T_NS + 'skip';
 
-var CONTROL_ATTRS = [T_IF, T_ELSE, T_EACH, T_FOREACH, T_TEXT];
+var CONTROL_ATTRS = [
+  'skip',
+  'if', 'else',
+  'each', 'foreach',
+  'text',
+  'switch', 'case', 'default'
+];
 
 var VOID_ELEMENTS = [
   'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img',
@@ -20,14 +32,14 @@ var VOID_ELEMENTS = [
 
 module.exports = {
   create: createRenderFunction,
-  render: function(root, data) {
-    var render = createRenderFunction(root);
+  render: function(root, data, context) {
+    var render = createRenderFunction(root, context);
     render(data);
     return render;
   }
 };
 
-function createRenderFunction(root) {
+function createRenderFunction(root, context) {
   if (typeof root === 'string') {
     var selector = root;
     root = document.querySelector(selector);
@@ -36,9 +48,10 @@ function createRenderFunction(root) {
     }
   }
   var render = createRenderer(root);
+  if (arguments.length < 2) context = {};
   return function _render(data) {
     // console.log('rendering with data:', data);
-    return incremental.patch(root, render.bind(this, data));
+    return incremental.patch(root, render.bind(context, data));
   };
 }
 
@@ -60,8 +73,8 @@ function createRenderer(root) {
   return function patch(data) {
     // console.log('patching:', root, 'with', data);
     calls.forEach(function(fn) {
-      fn(data);
-    });
+      fn.call(this, data);
+    }, this);
   };
 }
 
@@ -96,7 +109,7 @@ function createElementRenderer(node) {
   if (textExpression) {
     var getText = xp.evaluator(textExpression);
     renderChildren = function(data) {
-      var value = getText(data);
+      var value = getText.call(this, data);
       if (defined(value)) {
         incremental.text(String(value));
       }
@@ -152,12 +165,12 @@ function getAttributeMap(node) {
   for (var i = 0; i < attrs.length; i++) {
     var attr = attrs[i];
     var name = String(attr.name);
-    if (CONTROL_ATTRS.indexOf(name) > -1) {
-      // console.info('skipping control attribute', name, 'for', node);
-      continue;
-    } else if (name.indexOf(T_NAMESPACE) === 0) {
+    if (name.indexOf(T_NS) === 0) {
+      name = name.substr(T_NS.length);
+      if (CONTROL_ATTRS.indexOf(name) > -1) {
+        break;
+      }
       var getter = xp.evaluator(attr.value);
-      name = name.substr(T_NAMESPACE.length);
       switch (name) {
         case 'class':
           getter = transform.className(getter);
