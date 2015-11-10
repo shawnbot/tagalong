@@ -21,22 +21,16 @@ describe('render()', function() {
     });
   });
 
-  it('renders a single object key as text', function() {
-    body.innerHTML = '<div t-text="foo"></div>';
-    tagalong.render(body, {foo: 'bar'});
-    assert.equal(body.innerHTML, '<div>bar</div>');
+  it('throws an error when it cannot find its target', function() {
+    assert.throws(function() {
+      tagalong.render('#blargh', {foo: 'bar'});
+    });
   });
 
   it('accepts a CSS selector as a template target', function() {
     body.innerHTML = '<div t-text="foo"></div>';
     tagalong.render('body', {foo: 'bar'});
     assert.equal(body.innerHTML, '<div>bar</div>');
-  });
-
-  it('throws an error when it cannot find its target', function() {
-    assert.throws(function() {
-      tagalong.render('#blargh', {foo: 'bar'});
-    });
   });
 
   it('returns a render function for updates', function() {
@@ -47,16 +41,22 @@ describe('render()', function() {
     assert.equal(body.innerHTML, '<div>qux</div>');
   });
 
+  it('renders a key expression as text', function() {
+    body.innerHTML = '<div t-text="foo"></div>';
+    tagalong.render(body, {foo: 'bar'});
+    assert.equal(body.innerHTML, '<div>bar</div>');
+  });
+
   it('renders a nested object key as text', function() {
     body.innerHTML = '<div t-text="foo.bar"></div>';
     tagalong.render(body, {foo: {bar: 'baz'}});
     assert.equal(body.innerHTML, '<div>baz</div>');
   });
 
-  it('renders attributes with the "t-" prefix', function() {
-    body.innerHTML = '<div t-class="foo.bar">hi</div>';
+  it('renders expression attributes with the "t-" prefix', function() {
+    body.innerHTML = '<div t-type="foo.bar">hi</div>';
     tagalong.render(body, {foo: {bar: 'baz'}});
-    assert.equal(body.innerHTML, '<div class="baz">hi</div>');
+    assert.equal(body.innerHTML, '<div type="baz">hi</div>');
   });
 
   xit('re-renders attributes with the "t-" prefix', function() {
@@ -95,20 +95,71 @@ describe('render()', function() {
     assert.equal(body.innerHTML, '<div style="color: blue; line-height: 2;">hi</div>');
   });
 
-  it('renders an if statement', function() {
-    body.innerHTML = '<div t-if="foo > 0">yes</div>';
-    var render = tagalong.render(body, {foo: 0});
-    assert.equal(body.innerHTML, '');
-    render({foo: 1});
-    assert.equal(body.innerHTML, '<div>yes</div>');
+  describe('t-if', function() {
+    it('interprets if statements', function() {
+      body.innerHTML = '<div t-if="foo">yes</div>';
+      var render = tagalong.render(body, {foo: 0});
+      assert.equal(body.innerHTML, '');
+      render({foo: 1});
+      assert.equal(body.innerHTML, '<div>yes</div>');
+    });
+
+    it('interprets if/else statements', function() {
+      body.innerHTML = '<div t-if="foo">yes</div><span t-else>no</span>';
+      var render = tagalong.render(body, {foo: 0});
+      assert.equal(body.innerHTML, '<span>no</span>');
+      render({foo: 1});
+      assert.equal(body.innerHTML, '<div>yes</div>');
+    });
   });
 
-  it('renders an if/else statement', function() {
-    body.innerHTML = '<div t-if="foo">yes</div><span t-else>no</span>';
-    var render = tagalong.render(body, {foo: 0});
-    assert.equal(body.innerHTML, '<span>no</span>');
-    render({foo: 1});
-    assert.equal(body.innerHTML, '<div>yes</div>');
+  describe('t-skip', function() {
+    it('skips elements with t-skip attributes', function() {
+      body.innerHTML = '<div>hello, world<span t-skip>!</span></div>';
+      var render = tagalong.render(body);
+      assert.equal(body.innerHTML, '<div>hello, world</div>');
+    });
+  });
+
+  describe('t-with', function() {
+    it('does the right thing', function() {
+      body.innerHTML = [
+        '<h1 t-with="items">',
+          '<b t-text="length">0</b>',
+          ' item<i t-if="length !== 1">s</i>',
+        '</h1>'
+      ].join('');
+      var render = tagalong.render(body, {
+        items: ['foo']
+      });
+      assert.equal(body.innerHTML, '<h1><b>1</b> item</h1>');
+      render({items: ['foo', 'bar']});
+      assert.equal(body.innerHTML, '<h1><b>2</b> item<i>s</i></h1>');
+    });
+  });
+
+  describe('expressions', function() {
+
+    it('inherit scope from the calling context', function() {
+      body.innerHTML = '<div t-text="lower(name)">Joe</div>';
+      var render = tagalong.createRenderer(body, {
+        lower: function(name) { return name.toLowerCase(); }
+      });
+      render({name: 'Bill'});
+      assert.equal(body.innerHTML, '<div>bill</div>');
+    });
+
+    it('aliases symbols', function() {
+      body.innerHTML = [
+        '<ul t-foreach="." t-as="item">',
+          '<li t-text="item">Jill</li>',
+        '</ul>'
+      ].join('');
+      var data = ['Jill', 'Jane', 'Joe'];
+      tagalong.render(body, data);
+      assert.equal(body.innerHTML, '<ul><li>Jill</li><li>Jane</li><li>Joe</li></ul>');
+    });
+
   });
 
 });
