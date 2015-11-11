@@ -149,11 +149,11 @@ tagalong.render('#template', {
 ```
 
 #### `t-as="symbol"`
-This attribute aliases whatever data it gets (or "creates", as in
-[t-each](#each), [t-foreach](#foreach), or [t-with](#with) elements) to the
-named `symbol`, which can be referred to in child expressions by name. It can
-be used to make nested expressions easier to read, or simplify accessing
-numeric indices or properties that contain odd characters:
+Aliases whatever data it gets (or "creates", as in [t-each](#each),
+[t-foreach](#foreach), or [t-with](#with) elements) to the named `symbol`,
+which can be referred to in child expressions by name. This can be used to make
+nested expressions easier to read, or simplify accessing numeric indices or
+properties that contain odd characters:
 
 ```html
 <div id="template">
@@ -239,7 +239,8 @@ Tagalong ships with a `<t-template>` [custom element]:
 </t-template>
 ```
 
-Then, set the data either by setting the `data` attribute (any JavaScript expression will do), or set the `data` property directly:
+Then, set the data either by setting the `data` attribute (any JavaScript or
+JSON expression will do), or set the `data` property directly:
 
 ```js
 document.getElementById('people').data = {
