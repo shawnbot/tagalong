@@ -158,7 +158,7 @@ describe('render()', function() {
 
   describe('expressions', function() {
 
-    it('inherit scope from the calling context', function() {
+    it('inherits scope from the calling context', function() {
       body.innerHTML = '<div t-text="lower(name)">Joe</div>';
       var render = tagalong.createRenderer(body, {
         lower: function(name) { return name.toLowerCase(); }
@@ -176,6 +176,38 @@ describe('render()', function() {
       var data = ['Jill', 'Jane', 'Joe'];
       tagalong.render(body, data);
       assert.equal(body.innerHTML, '<ul><li>Jill</li><li>Jane</li><li>Joe</li></ul>');
+    });
+
+    it('interprets "." as identity', function() {
+      body.innerHTML = '<b t-text=".">foo</b>';
+      tagalong.render(body, 'bar');
+      assert.equal(body.innerHTML, '<b>bar</b>');
+
+      body.innerHTML = '<b>{{.}}</b>';
+      tagalong.render(body, 'baz');
+      assert.equal(body.innerHTML, '<b>baz</b>');
+    });
+
+    it('understands fat arrows', function() {
+      var variants = [
+        '<span t-with="x => x[0]">{{ . }}</span>',
+        '<span t-with="(x) => x[0]">{{ . }}</span>',
+        '<span t-with="(x) => { x[0] }">{{ . }}</span>',
+      ];
+
+      variants.forEach(function(html) {
+        body.innerHTML = html;
+        tagalong.render(body, ['foo']);
+        assert.equal(body.innerHTML, '<span>foo</span>');
+      });
+    });
+
+    it('passes scope to fat arrows', function() {
+      body.innerHTML = '<b t-text="x => f(x)"></b>';
+      tagalong.render(body, 10, {
+        f: function(x) { return x * x; }
+      });
+      assert.equal(body.innerHTML, '<b>100</b>');
     });
 
   });
