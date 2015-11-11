@@ -9,7 +9,13 @@ var parseArrow = function parseArrow(expression) {
   if (!match) throw new Error('invalid arrow expression: "' + expression + '"');
   var args = match[1];
   var body = match[4] || match[5];
-  return new Function(args, 'return (' + body + ')');
+  return new Function(args, [
+    'try {',
+    '  with (this) {',
+    '    return (', body, ');',
+    '  }',
+    '} catch (error) { }'
+  ].join('\n'));
 };
 
 module.exports = {
