@@ -53,46 +53,52 @@ describe('render()', function() {
     assert.equal(body.innerHTML, '<div>baz</div>');
   });
 
-  it('renders expression attributes with the "t-" prefix', function() {
-    body.innerHTML = '<div t-type="foo.bar">hi</div>';
-    tagalong.render(body, {foo: {bar: 'baz'}});
-    assert.equal(body.innerHTML, '<div type="baz">hi</div>');
+  describe('t- attributes', function() {
+    it('renders expression attributes with the "t-" prefix', function() {
+      body.innerHTML = '<div t-id="foo.bar">hi</div>';
+      tagalong.render(body, {foo: {bar: 'baz'}});
+      assert.equal(body.innerHTML, '<div id="baz">hi</div>');
+    });
+
+    xit('re-renders attributes with the "t-" prefix', function() {
+      body.innerHTML = '<div t-class="foo.bar">hi</div>';
+      var render = tagalong.render(body, {foo: {bar: 'baz'}});
+      assert.equal(body.innerHTML, '<div class="baz">hi</div>');
+      render({foo: {bar: 'qux'}});
+      assert.equal(body.innerHTML, '<div class="qux">hi</div>');
+    });
   });
 
-  xit('re-renders attributes with the "t-" prefix', function() {
-    body.innerHTML = '<div t-class="foo.bar">hi</div>';
-    var render = tagalong.render(body, {foo: {bar: 'baz'}});
-    assert.equal(body.innerHTML, '<div class="baz">hi</div>');
-    render({foo: {bar: 'qux'}});
-    assert.equal(body.innerHTML, '<div class="qux">hi</div>');
+  describe('t-class attribute', function() {
+    it('renders class names with t-class="{names}"', function() {
+      body.innerHTML = '<div t-class="foo">hi</div>';
+      var render = tagalong.render(body, {foo: {bar: true, baz: false}});
+      assert.equal(body.innerHTML, '<div class="bar">hi</div>');
+    });
+
+    xit('re-renders class names with t-class="{names}"', function() {
+      body.innerHTML = '<div t-class="foo">hi</div>';
+      var render = tagalong.render(body, {foo: {bar: true, baz: false}});
+      assert.equal(body.innerHTML, '<div class="bar">hi</div>');
+      render({foo: null});
+      assert.equal(body.innerHTML, '<div class="baz">hi</div>');
+    });
   });
 
-  it('renders class names with t-class="{names}"', function() {
-    body.innerHTML = '<div t-class="foo">hi</div>';
-    var render = tagalong.render(body, {foo: {bar: true, baz: false}});
-    assert.equal(body.innerHTML, '<div class="bar">hi</div>');
-  });
+  describe('t-style attribute', function() {
+    it('renders inline styles with t-style="{properties}"', function() {
+      body.innerHTML = '<div t-style="x">hi</div>';
+      var render = tagalong.render(body, {x: {color: 'green', fontWeight: 'bold'}});
+      assert.equal(body.innerHTML, '<div style="color: green; font-weight: bold;">hi</div>');
+    });
 
-  xit('re-renders class names with t-class="{names}"', function() {
-    body.innerHTML = '<div t-class="foo">hi</div>';
-    var render = tagalong.render(body, {foo: {bar: true, baz: false}});
-    assert.equal(body.innerHTML, '<div class="bar">hi</div>');
-    render({foo: null});
-    assert.equal(body.innerHTML, '<div class="baz">hi</div>');
-  });
-
-  it('renders inline styles with t-style="{properties}"', function() {
-    body.innerHTML = '<div t-style="x">hi</div>';
-    var render = tagalong.render(body, {x: {color: 'green', fontWeight: 'bold'}});
-    assert.equal(body.innerHTML, '<div style="color: green; font-weight: bold;">hi</div>');
-  });
-
-  xit('re-renders inline styles with t-style="{properties}"', function() {
-    body.innerHTML = '<div t-style="x">hi</div>';
-    var render = tagalong.render(body, {x: {color: 'green', fontWeight: 'bold'}});
-    assert.equal(body.innerHTML, '<div style="color: green; font-weight: bold;">hi</div>');
-    render({x: {color: 'blue', lineHeight: '2'}});
-    assert.equal(body.innerHTML, '<div style="color: blue; line-height: 2;">hi</div>');
+    xit('re-renders inline styles with t-style="{properties}"', function() {
+      body.innerHTML = '<div t-style="x">hi</div>';
+      var render = tagalong.render(body, {x: {color: 'green', fontWeight: 'bold'}});
+      assert.equal(body.innerHTML, '<div style="color: green; font-weight: bold;">hi</div>');
+      render({x: {color: 'blue', lineHeight: '2'}});
+      assert.equal(body.innerHTML, '<div style="color: blue; line-height: 2;">hi</div>');
+    });
   });
 
   describe('t-if', function() {
