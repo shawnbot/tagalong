@@ -1,6 +1,6 @@
 (function() {
 
-  var theme = 'elegant';
+  var theme = 'eclipse';
   var inputHTML = CodeMirror.fromTextArea(document.querySelector('#input-html'), {
     lineNumbers: true,
     viewportMargin: Infinity,
