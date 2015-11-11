@@ -7,13 +7,13 @@ var evaluate = function(expression, data) {
 
 var evaluator = function(expression) {
   if (arrow.is(expression)) {
-    return parseArrow(expression);
+    return arrow.parse(expression);
   }
 
   var symbol = 'd' + Date.now();
   // '.' is just the identity function
-  if (expression === '.') {
-    return function identity(d) { return d; };
+  if (expression.match(/^\s*\.\s*$/)) {
+    return identity;
   // '.foo' addresses the context directly
   } else if (expression.match(/^\s*\.\w/)) {
     expression = symbol + expression;
@@ -23,14 +23,18 @@ var evaluator = function(expression) {
     'try { ',
     '  with (this) {',
     '    with (', symbol, ') {',
-    '      return ', expression, ';',
+    '      return (', expression, ');',
     '    } ',
     '  } ',
     '} catch (error) { }'
-  ].join(''));
+  ].join('\n'));
 };
 
 module.exports = {
   evaluate: evaluate,
   evaluator: evaluator,
+};
+
+function identity(d) {
+  return d;
 }
