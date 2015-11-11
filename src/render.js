@@ -82,10 +82,15 @@ function createRenderer(root) {
 }
 
 function createTextRenderer(node) {
-  var template = node.nodeValue;
-  return function(data) {
-    var text = interpolate.call(this, template, data);
-    incremental.text(defined(text) ? text : '');
+  var value = node.nodeValue;
+  if (interpolate.isTemplate(value)) {
+    return function(data) {
+      var text = interpolate.call(this, value, data);
+      incremental.text(defined(text) ? text : '');
+    };
+  }
+  return function() {
+    incremental.text(value);
   };
 }
 
