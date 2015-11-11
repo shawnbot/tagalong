@@ -193,7 +193,7 @@ function getAttributeMap(node) {
     if (name.indexOf(T_NS) === 0) {
       name = name.substr(T_NS.length);
       if (CONTROL_ATTRS.indexOf(name) > -1) {
-        break;
+        continue;
       }
       var getter = xp.evaluator(attr.value);
       switch (name) {
