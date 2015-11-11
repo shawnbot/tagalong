@@ -150,13 +150,13 @@ function createElementRenderer(node) {
   var symbol = node.getAttribute(T_AS);
 
   if (eachExpression) {
-    // console.info('render each:', node, eachExpression);
     render = renderEach(eachExpression, render, symbol);
   } else if (forEachExpression) {
-    // console.info('render foreach:', node, forEachExpression);
     renderChildren = renderEach(forEachExpression, renderChildren, symbol);
   } else if (withExpression) {
     render = renderWith(withExpression, render, symbol);
+  } else if (symbol) {
+    render = symbolSetter(symbol, render);
   }
 
   return render;
