@@ -95,7 +95,7 @@ render({error: null});
 ```
 
 #### `t-each="expression"` <a name="each"></a>
-Repeats this element for each value in the evaluated JavaScript `expression`:
+Repeats the element for each value in the evaluated JavaScript `expression`:
 
 ```html
 <ul id="people">
@@ -111,7 +111,7 @@ tagalong.render('#people', {
 ```
 
 #### `t-foreach="expression"` <a name="foreach"></a>
-Repeats _this element's children_ for each value in the evaluated JavaScript
+Repeats the element's _children_ for each value in the evaluated JavaScript
 `expression`:
 
 ```html
@@ -131,7 +131,7 @@ tagalong.render('#template', {
 ```
 
 #### `t-with="expression"` <a name="with"></a>
-Changes the context of nested expressions in this element's children.
+Changes the context of nested expressions in the element's children.
 
 ```html
 <div id="template">
