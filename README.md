@@ -69,7 +69,7 @@ expressions wrapped in `{{` and `}}`:
 
 ```html
 <div id="template">
-  Hello, {{ world }}!
+  Hello, {{ world.toUpperCase() }}!
 </div>
 <script>
 tagalong.render('#template', {world: 'Earth'});
