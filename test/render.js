@@ -113,6 +113,34 @@ describe('render()', function() {
     });
   });
 
+  describe('t-each', function() {
+    it('iterates over arrays', function() {
+      body.innerHTML = '<b t-each="things">{{.}}</b>';
+      tagalong.render(body, {things: ['foo', 'bar']});
+      assert.equal(body.innerHTML, '<b>foo</b><b>bar</b>');
+    });
+
+    it('sets the $i variable', function() {
+      body.innerHTML = '<b t-each="things">{{.}}@{{$i}}</b>';
+      tagalong.render(body, {things: ['foo', 'bar']});
+      assert.equal(body.innerHTML, '<b>foo@0</b><b>bar@1</b>');
+    });
+  });
+
+  describe('t-foreach', function() {
+    it('iterates over arrays', function() {
+      body.innerHTML = '<b t-foreach="things"><i>{{.}}</i></b>';
+      tagalong.render(body, {things: ['foo', 'bar']});
+      assert.equal(body.innerHTML, '<b><i>foo</i><i>bar</i></b>');
+    });
+
+    it('sets the $i variable', function() {
+      body.innerHTML = '<b t-foreach="things">{{.}}@{{$i}};</b>';
+      tagalong.render(body, {things: ['foo', 'bar']});
+      assert.equal(body.innerHTML, '<b>foo@0;bar@1;</b>');
+    });
+  });
+
   describe('t-skip', function() {
     it('skips elements with t-skip attributes', function() {
       body.innerHTML = '<div>hello, world<span t-skip>!</span></div>';
