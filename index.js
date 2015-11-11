@@ -5,7 +5,7 @@
     lineNumbers: true,
     viewportMargin: Infinity,
     theme: theme,
-    mode: 'xml'
+    mode: 'htmlmixed'
   });
 
   var inputJS = CodeMirror.fromTextArea(document.querySelector('#input-js'), {
