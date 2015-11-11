@@ -246,19 +246,26 @@ function forEach(data, fn, symbol) {
     ? symbolSetter(symbol, fn)
     : fn;
 
+  var INDEX = '$i';
+  var each = function(d, i) {
+    this[INDEX] = i;
+    iterate.call(this, d);
+    delete this[INDEX];
+  };
+
   if (typeof data === 'object') {
     if (Array.isArray(data)) {
-      return data.forEach(iterate, this);
+      return data.forEach(each, this);
     }
 
     var i = 0;
     for (var key in data) {
       if (data.hasOwnProperty(key)) {
-        iterate.call(this, {key: key, value: data[key]}, i++);
+        each.call(this, {key: key, value: data[key]}, i++);
       }
     }
   } else if (typeof data === 'string') {
-    return data.split('').forEach(iterate, this);
+    return data.split('').forEach(each, this);
   }
 
   // throw new Error('unable to iterate over ' + (typeof data));
