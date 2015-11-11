@@ -25,7 +25,12 @@
     </section>
 
     <section id="examples" class="examples container">
-      Examples: <a><span class="title"></span></a>
+      Examples:
+      <a t-each="." t-href="'#' + id"
+        t-data-template="template"
+        t-data-script="script">
+        <span t-text="title"></span>
+      </a>
     </section>
 
     <form class="container">
@@ -37,14 +42,14 @@
 
         <h2>HTML</h2>
         <textarea id="input-html">&lt;div id="template"&gt;
-  &lt;h2 class="title"&gt;title&lt;/h2&gt;
-  &lt;p class="desc"&gt;description&lt;/p&gt;
+  &lt;h2 class="title"&gt;{{ title }}&lt;/h2&gt;
+  &lt;p class="desc"&gt;{{ description }}&lt;/p&gt;
   &lt;ul class="items"&gt;
-    &lt;li&gt;&lt;/li&gt;
+    &lt;li t-each="items"&gt;{{ . }}&lt;/li&gt;
   &lt;/ul&gt;
 &lt;/div&gt;</textarea>
         <h2>JavaScript</h2>
-        <textarea id="input-js">tagalong('#template', {
+        <textarea id="input-js">tagalong.render('#template', {
   title: 'This is the Title',
   desc: 'This is the description.',
   items: ['x', 'y', 'z']

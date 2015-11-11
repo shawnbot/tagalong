@@ -66,7 +66,7 @@
 </ul>
       */}),
       script: multiline(function(){/*
-tagalong('#template', [
+tagalong.render('#template', [
   {first: 'Jill', last: 'Hughes'},
   {first: 'Jack', last: 'Adams'},
   {first: 'Jo', last: 'Weaver'}
@@ -93,7 +93,7 @@ tagalong('#template', [
 </table>
       */}),
       script: multiline(function(){/*
-tagalong('#template', {
+tagalong.render('#template', {
   columns: ['name', 'age', 'occupation'],
   rows: [
     ['Judy', 28, 'Developer'],
@@ -117,7 +117,7 @@ tagalong('#template', {
 </div>
       */}),
       script: multiline(function(){/*
-tagalong('#template', {
+tagalong.render('#template', {
   title: 'This is the Title',
   desc: 'This is the description.',
   items: [
@@ -139,20 +139,17 @@ tagalong('#template', {
 
   ];
 
-  var ex = tagalong('#examples', examples, {
-    '@href': function(d) { return '#' + d.id; },
-    '@data-template': 'template',
-    '@data-script': 'script'
-  });
+  var ex = document.querySelector('#examples');
+  tagalong.render(ex, examples);
 
-  var selectedLink;
+  var selectedLink = ex.querySelector('a');
   var hashchange = function() {
     if (selectedLink) selectedLink.classList.remove('active');
     var link = document.querySelector('[href="' + location.hash + '"]');
     if (!link) link = ex.querySelector('a[href]');
     if (link) {
       link.classList.add('active');
-      // console.log('activating example:', link);
+      console.log('activating example:', link);
       inputHTML.setValue(link.getAttribute('data-template'));
       inputJS.setValue(link.getAttribute('data-script'));
       selectedLink = link;
