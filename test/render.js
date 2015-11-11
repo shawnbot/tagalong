@@ -146,6 +146,14 @@ describe('render()', function() {
       render({world: 'world'});
       assert.equal(body.innerHTML, 'Hello, world!');
     });
+
+    it('doesn\'t get greedy with curlies', function() {
+      body.innerHTML = 'The {{x}} and the {{y || x}}';
+      var render = tagalong.render(body, {x: 'birds', y: 'bees'});
+      assert.equal(body.innerHTML, 'The birds and the bees');
+      render({x: 'birds', y: null});
+      assert.equal(body.innerHTML, 'The birds and the birds');
+    });
   });
 
   describe('expressions', function() {
