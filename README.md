@@ -3,6 +3,8 @@
 Tagalong is a tool for creating progressively enhanced HTML templates.
 Write your content in HTML, add attributes that describe how data maps
 to each element, and update the DOM with a single JavaScript call.
+Tagalong uses [incremental-dom] under the hood, minimizing the number of
+changes to the DOM and limiting [layout thrashing].
 
 Given this HTML:
 
@@ -275,3 +277,4 @@ document.getElementById('people').data = {
 
 [custom element]: http://www.html5rocks.com/en/tutorials/webcomponents/customelements/
 [incremental-dom]: https://github.com/google/incremental-dom
+[layout thrashing]: http://wilsonpage.co.uk/preventing-layout-thrashing/
