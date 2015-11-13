@@ -1,15 +1,19 @@
 # tagalong
 
-Tagalong is dynamic DOM templating done right. It works with plain old HTML and JavaScript expressions, and uses [incremental-dom] to only update elements that change. Given this HTML:
+Tagalong is a tool for creating progressively enhanced HTML templates.
+Write your content in HTML, add attributes that describe how data maps
+to each element, and update the DOM with a single JavaScript call.
+
+Given this HTML:
 
 ```html
 <div id="people">
   <h1>
     <span t-text="items.length">0</span>
-    Member<span t-if="items.length !== 1">s</span>
+    <span t-text="items.length === 1 ? 'person' : 'people'">people</span>
   </h1>
   <ul>
-    <li t-each="items">
+    <li t-each="people">
       <span t-text="name">Rosie</span> the
       <span t-text="occupation">Riveter</span>
     </li>
@@ -23,11 +27,28 @@ You can render new data like so:
 tagalong.render('#people', {
   people: [
     {name: 'Rosie', occupation: 'Riveter'},
-    {name: 'Joe', occupation: 'Waiter'},
-    {name: 'Jill', occupation: 'Welder'},
+    {name: 'Joe', occupation: 'Plumber'},
+    {name: 'Jill', occupation: 'Astrophysicist'},
   ]
 });
 ```
+
+And the result should look something like this:
+
+```html
+<div id="people">
+  <h1>
+    <span>3</span>
+    <span>people</span>
+  </h1>
+  <ul>
+    <li><span>Rosie</span> the <span>Riveter</span></li>
+    <li><span>Joe</span> the <span>Plumber</span></li>
+    <li><span>Jill</span> the <span>Astrophysicist</span></li>
+  </ul>
+</div>
+```
+
 
 ### API
 
