@@ -43,9 +43,9 @@ var render = tagalong.render('#template', data);
 render(otherData);
 ```
 
-Because tagalong irreparably modifies the DOM and removes all `t-` attributes,
-you _must_ use the returned render function if you wish to update the element
-with new data.
+Because tagalong modifies the DOM and removes all `t-` attributes, you _must_
+use the returned render function if you wish to update the element with new
+data.
 
 ### Attributes
 The following attributes are the "control structures" of tagalong template
@@ -65,7 +65,7 @@ tagalong.render('#template', {name: 'bar'});
 ```
 
 Alternately, you can embed expressions in the text of any node with JavaScript
-expressions wrapped in `{{` and `}}`:
+wrapped in `{{` and `}}`:
 
 ```html
 <div id="template">
