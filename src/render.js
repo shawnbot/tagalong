@@ -106,6 +106,7 @@ function createTextRenderer(node) {
 
 function createElementRenderer(node) {
   var name = node.nodeName.toLowerCase();
+  var id = node.id;
 
   // this element will never be rendered if it has a truthy t-skip attribute
   if (node.hasAttribute(T_SKIP)) {
@@ -150,9 +151,9 @@ function createElementRenderer(node) {
 
     var attrs = interpolateAttributes.call(this, attrMap, data);
     if (isVoid) {
-      incremental.elementVoid(name, '', attrs);
+      incremental.elementVoid(name, id, attrs);
     } else {
-      incremental.elementOpen(name, '', attrs);
+      incremental.elementOpen(name, id, attrs);
       renderChildren.call(this, data);
       incremental.elementClose(name);
     }
