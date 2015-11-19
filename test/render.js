@@ -60,6 +60,18 @@ describe('render()', function() {
       assert.equal(body.innerHTML, '<div id="baz">hi</div>');
     });
 
+    it('renders template strings in prefixed attrs', function() {
+      body.innerHTML = '<a t-href="#{{ id }}">hi</a>';
+      tagalong.render(body, {id: 'foo'});
+      assert.equal(body.innerHTML, '<a href="#foo">hi</a>');
+    });
+
+    it('does not confuse template strings and fat arrows', function() {
+      body.innerHTML = '<a t-title="x => {{ id }}">hi</a>';
+      tagalong.render(body, {id: 'foo'});
+      assert.equal(body.innerHTML, '<a title="x => foo">hi</a>');
+    });
+
     xit('re-renders attributes with the "t-" prefix', function() {
       body.innerHTML = '<div t-class="foo.bar">hi</div>';
       var render = tagalong.render(body, {foo: {bar: 'baz'}});

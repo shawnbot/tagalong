@@ -81,6 +81,16 @@ function createRenderer(root) {
   };
 }
 
+function compileExpression(expr) {
+  if (interpolate.isTemplate(expr)) {
+    return function(data) {
+      return interpolate(expr, data);
+    };
+  } else {
+    return xp.evaluator(expr);
+  }
+}
+
 function createTextRenderer(node) {
   var value = node.nodeValue;
   if (interpolate.isTemplate(value)) {
@@ -121,7 +131,7 @@ function createElementRenderer(node) {
   // <span t-text="some.value"></span>
   var textExpression = node.getAttribute(T_TEXT);
   if (textExpression) {
-    var getText = xp.evaluator(textExpression);
+    var getText = compileExpression(textExpression);
     renderChildren = function(data) {
       var value = getText.call(this, data);
       if (defined(value)) {
@@ -195,7 +205,7 @@ function getAttributeMap(node) {
       if (CONTROL_ATTRS.indexOf(name) > -1) {
         continue;
       }
-      var getter = xp.evaluator(attr.value);
+      var getter = compileExpression(attr.value);
       switch (name) {
         case 'class':
           getter = transform.className(getter);
