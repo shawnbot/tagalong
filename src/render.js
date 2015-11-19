@@ -226,7 +226,7 @@ function interpolateAttributes(attrMap, data) {
   var attrs = [];
   for (var key in attrMap) {
     var value = attrMap[key];
-    if (typeof value === 'function') {
+    if (typeof value === 'function' && !key.match(/^on/)) {
       value = value.call(this, data, key);
     }
     if (defined(value)) {

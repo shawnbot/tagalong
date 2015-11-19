@@ -258,4 +258,24 @@ describe('render()', function() {
 
   });
 
+  xdescribe('on* attributes', function() {
+    it('should not evaluate on* attrs', function(done) {
+      body.innerHTML = '<a id="foo" t-onclick="e => test(e.target.id)">hi</a>';
+      var link = body.querySelector('a');
+      var rendered = false;
+      tagalong.render(body, {}, {
+        test: function(e) {
+          assert.equal(rendered, false, 'this should not call until after rendering');
+          assert.equal(e.target.id, 'foo');
+          done();
+        }
+      });
+      assert.equal(typeof link.onclick, 'function', 'no onclick handler set');
+      rendered = true;
+      var e = document.createEvent('MouseEvents');
+      e.initEvent('click', true, true);
+      link.onclick(e);
+    });
+  });
+
 });
