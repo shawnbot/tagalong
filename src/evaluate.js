@@ -10,7 +10,7 @@ var evaluator = function(expression) {
     return arrow.parse(expression);
   }
 
-  var symbol = 'd' + Date.now();
+  var symbol = 'd';
   // '.' is just the identity function
   if (expression.match(/^\s*\.\s*$/)) {
     return identity;
