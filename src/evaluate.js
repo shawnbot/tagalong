@@ -1,4 +1,5 @@
 var arrow = require('./arrow');
+var functor = require('./functor');
 
 var evaluate = function(expression, data) {
   var fn = evaluator(expression);
@@ -6,6 +7,14 @@ var evaluate = function(expression, data) {
 };
 
 var evaluator = function(expression) {
+  if (typeof expression !== 'string') {
+    expression = String(expression);
+  }
+
+  if (!expression.trim()) {
+    return functor(undefined);
+  }
+
   if (arrow.is(expression)) {
     return arrow.parse(expression);
   }

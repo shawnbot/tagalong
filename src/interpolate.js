@@ -1,10 +1,5 @@
 var evaluate = require('./evaluate').evaluate;
-
-var functor = function(x) {
-  return function() {
-    return x;
-  }
-};
+var functor = require('./functor');
 
 var pattern = /{{\s*([^}]+)\s*}}/g;
 
