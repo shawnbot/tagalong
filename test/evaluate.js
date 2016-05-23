@@ -62,19 +62,24 @@ describe('evaluate()', () => {
       b: 200,
       c: {
         d: 300
+      },
+      f: function(x) {
+        return x + 100;
       }
     };
 
     [
       'x + a',
       'y + b',
-      'z.a + c.d'
+      'z.a + c.d',
+      'd => f(d.x)'
     ]
     .forEach(expr => {
+      var v = e.evaluator(expr).call(context, data);
       assert.equal(
-        e.evaluator(expr).call(context, data) % 101,
+        v % 101,
         0,
-        expr
+        expr + ' -> "' + v + '"'
       );
     });
   });
