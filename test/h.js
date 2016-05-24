@@ -13,9 +13,10 @@ const setup = (done) => {
   });
 };
 
-const SVG = 'https://www.w3.org/2000/svg';
-const XLINK = 'https://www.w3.org/TR/xlink/';
-const XMLNS = 'https://www.w3.org/2000/xmlns/';
+const ns = require('../src/ns');
+const XLINK = ns.prefixToURI.xlink;
+const XMLNS = ns.prefixToURI.xmlns;
+const SVG = ns.prefixToURI.svg;
 
 before(setup);
 
@@ -29,12 +30,6 @@ describe('h(name)', () => {
     assert.equal(svg.localName, 'svg');
     assert.equal(svg.namespaceURI, SVG);
   });
-
-  it('respects {name, prefix} format', () => {
-    var svg = h({name: 'svg', prefix: 'svg'});
-    assert.equal(svg.localName, 'svg');
-    assert.equal(svg.namespaceURI, SVG);
-  });
 });
 
 describe('h(name, props)', () => {
@@ -44,10 +39,7 @@ describe('h(name, props)', () => {
 
   it('sets namespaced attributes', () => {
     var el = h('div', {'xlink:href': '#xyz'})
-    assert.equal(
-      el.getAttributeNS(XLINK, 'href'),
-      '#xyz'
-    );
+    assert.equal(el.getAttributeNS(XLINK, 'href'), '#xyz');
   });
 
   it('sets xmlns attributes', () => {

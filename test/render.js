@@ -1,7 +1,12 @@
-var jsdom = require('jsdom');
-var assert = require('assert');
-var path = require('path');
-var tagalong = require('../');
+const jsdom = require('jsdom');
+const assert = require('assert');
+const path = require('path');
+const tagalong = require('../');
+
+const ns = require('../src/ns');
+const XLINK = ns.prefixToURI.xlink;
+const XMLNS = ns.prefixToURI.xmlns;
+const SVG = ns.prefixToURI.svg;
 
 var root;
 before(function(done) {
@@ -189,13 +194,35 @@ describe('render()', () => {
       assert.equal(root.innerHTML, 'Hello, world!');
     });
 
-    it('doesn\'t get greedy with curlies', () => {
+    it("doesn't get greedy with curlies", () => {
       root.innerHTML = 'The {{x}} and the {{y || x}}';
       var render = tagalong.render(root, {x: 'birds', y: 'bees'});
       assert.equal(root.innerHTML, 'The birds and the bees');
       render({x: 'birds', y: null});
       assert.equal(root.innerHTML, 'The birds and the birds');
     });
+  });
+
+  it('preserves namespaces', () => {
+    root.innerHTML = '<svg></svg>';
+    root.querySelector('svg')
+      .setAttributeNS(XMLNS, 'xlink', XLINK);
+    tagalong.render(root, {});
+    assert.equal(root.innerHTML, '<svg xmlns:xlink="http://www.w3.org/TR/xlink/"></svg>');
+
+    root.innerHTML = '<svg><a t-each="items"></a></svg>';
+    root.querySelector('a')
+      .setAttributeNS(XLINK, 't-href', 'href');
+    tagalong.render(root, {
+      items: [
+        {href: '#foo'},
+        {href: '#bar'}
+      ]
+    });
+    assert.equal(
+      root.innerHTML,
+      '<svg><a xlink:href="#foo"></a><a xlink:href="#bar"></a></svg>'
+    );
   });
 
   describe('expressions', () => {
