@@ -205,10 +205,6 @@ describe('render()', () => {
 
   it('preserves namespaces', () => {
     root.innerHTML = '<svg xmlns:xlink="http://www.w3.org/TR/xlink/"></svg>';
-    tagalong.render(root, {});
-    assert.equal(root.innerHTML, '<svg xmlns:xlink="http://www.w3.org/TR/xlink/"></svg>');
-
-    root.innerHTML = '<svg><a t-each="items" xlink:t-href="href"></a></svg>';
     tagalong.render(root, {
       items: [
         {href: '#foo'},
@@ -217,7 +213,30 @@ describe('render()', () => {
     });
     assert.equal(
       root.innerHTML,
-      '<svg><a xlink:href="#foo"></a><a xlink:href="#bar"></a></svg>'
+      '<svg xmlns:xlink="http://www.w3.org/TR/xlink/"></svg>'
+    );
+  });
+
+  it('preserves namespaces in templated attributes', () => {
+    root.innerHTML = (
+      '<svg>' +
+      '<a t-each="items" xlink:t-href="href"></a>' +
+      '</svg>'
+    );
+    tagalong.render(root, {
+      items: [
+        {href: '#foo'},
+        {href: '#bar'}
+      ]
+    });
+    assert.equal(
+      root.innerHTML,
+      (
+        '<svg>' +
+        '<a xlink:href="#foo"></a>' +
+        '<a xlink:href="#bar"></a>' +
+        '</svg>'
+      )
     );
   });
 
