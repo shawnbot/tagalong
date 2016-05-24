@@ -9,15 +9,17 @@ Object.keys(prefixToURI).forEach(function(prefix) {
   uriToPrefix[prefixToURI[prefix]] = prefix;
 });
 
-var qualify = function(name) {
-  var colon = name.indexOf(':');
+var qualify = function(qname) {
   var prefix;
+  var localName = qname;
+  var colon = qname.indexOf(':');
   if (colon > -1) {
-    prefix = name.substr(0, colon);
-    name = name.substr(colon + 1);
+    prefix = qname.substr(0, colon);
+    localName = qname.substr(colon + 1);
   }
   return {
-    localName: name,
+    name: qname,
+    localName: localName,
     prefix: prefix,
     namespaceURI: prefixToURI[prefix]
   };

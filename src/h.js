@@ -58,8 +58,7 @@ var setProps = function(el, props) {
 
     var name = ns.qualify(prop);
     if (name.namespaceURI) {
-      console.log('ns:', prop, name, value);
-      el.setAttributeNS(name.namespaceURI, name.localName, value);
+      el.setAttributeNS(name.namespaceURI, name.name, value);
     } else {
       el.setAttribute(name.localName, value);
     }

@@ -183,24 +183,20 @@ function getAttributeMap(node) {
   var attrs = node.attributes;
   for (var i = 0; i < attrs.length; i++) {
     var attr = attrs[i];
-    var name = attr.name;
+    var name = ns.qualify(attr.name);
+    var localName = name.localName;
     var value = attr.value;
-    if (name.indexOf(T_NS) === 0) {
-      name = name.substr(T_NS.length);
-      if (CONTROL_ATTRS.indexOf(name) > -1) {
+    if (localName.indexOf(T_NS) === 0) {
+      localName = localName.substr(T_NS.length);
+      if (CONTROL_ATTRS.indexOf(localName) > -1) {
         continue;
       }
       value = compileExpression(value);
     }
-    var nsURI = attr.namespaceURI;
-    if (nsURI) {
-      if (nsURI in ns.uriToPrefix) {
-        name = ns.uriToPrefix[nsURI] + ':' + name;
-      } else {
-        console.warn('unknown namespace URI:', nsURI);
-      }
-    }
-    map[name] = value;
+    var qname = name.prefix
+      ? name.prefix + ':' + localName
+      : localName;
+    map[qname] = value;
   }
   return map;
 }

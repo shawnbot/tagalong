@@ -11,7 +11,7 @@ const SVG = ns.prefixToURI.svg;
 var root;
 before(function(done) {
   var context = this;
-  jsdom.env('<div id="root"></div>', function(errors, _window) {
+  jsdom.env('<!DOCTYPE html>\n<div id="root"></div>', function(errors, _window) {
     if (errors) return done(errors[0]);
     global.window = _window;
     global.document = _window.document;
@@ -204,15 +204,11 @@ describe('render()', () => {
   });
 
   it('preserves namespaces', () => {
-    root.innerHTML = '<svg></svg>';
-    root.querySelector('svg')
-      .setAttributeNS(XMLNS, 'xlink', XLINK);
+    root.innerHTML = '<svg xmlns:xlink="http://www.w3.org/TR/xlink/"></svg>';
     tagalong.render(root, {});
     assert.equal(root.innerHTML, '<svg xmlns:xlink="http://www.w3.org/TR/xlink/"></svg>');
 
-    root.innerHTML = '<svg><a t-each="items"></a></svg>';
-    root.querySelector('a')
-      .setAttributeNS(XLINK, 't-href', 'href');
+    root.innerHTML = '<svg><a t-each="items" xlink:t-href="href"></a></svg>';
     tagalong.render(root, {
       items: [
         {href: '#foo'},
