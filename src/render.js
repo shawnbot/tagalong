@@ -2,10 +2,11 @@ var code = require('./evaluate');
 var functor = require('./functor');
 var xp = require('./evaluate');
 var interpolate = require('./interpolate');
-var transform = require('./transform');
 var h = require('./h');
 
 var morphdom = require('morphdom');
+
+var ns = require('./ns');
 
 // our attribute namespace
 var T_NS = 't-';
@@ -182,29 +183,24 @@ function getAttributeMap(node) {
   var attrs = node.attributes;
   for (var i = 0; i < attrs.length; i++) {
     var attr = attrs[i];
-    var name = String(attr.name);
+    var name = attr.name;
+    var value = attr.value;
     if (name.indexOf(T_NS) === 0) {
       name = name.substr(T_NS.length);
       if (CONTROL_ATTRS.indexOf(name) > -1) {
         continue;
       }
-      var getter = compileExpression(attr.value);
-      switch (name) {
-        case 'class':
-          getter = transform.className(getter);
-          break;
-        case 'style':
-          getter = transform.style(getter);
-          break;
-
-        default:
-          getter = stringify(getter);
-          break;
-      }
-      map[name] = getter;
-    } else {
-      map[name] = attr.value;
+      value = compileExpression(value);
     }
+    var nsURI = attr.namespaceURI;
+    if (nsURI) {
+      if (nsURI in ns.uriToPrefix) {
+        name = ns.uriToPrefix[nsURI] + ':' + name;
+      } else {
+        console.warn('unknown namespace URI:', nsURI);
+      }
+    }
+    map[name] = value;
   }
   return map;
 }

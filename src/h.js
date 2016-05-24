@@ -1,12 +1,14 @@
+var ns = require('./ns');
+
 module.exports = function(name, props, children) {
   var node;
   if (Array.isArray(name)) {
     node = document.createDocumentFragment();
   } else {
-    name = qualify(name);
-    node = name.prefix
-      ? document.createElementNS(name.prefix, name.name)
-      : document.createElement(name.name);
+    name = ns.qualify(name);
+    node = name.namespaceURI
+      ? document.createElementNS(name.namespaceURI, name.localName)
+      : document.createElement(name.localName);
   }
 
   if (Array.isArray(props) || typeof props === 'string') {
@@ -32,45 +34,65 @@ module.exports = function(name, props, children) {
   return node;
 };
 
-var namespaces = {
-  svg: 'https://www.w3.org/2000/svg',
-  xlink: 'https://www.w3.org/TR/xlink/',
-  xmlns: 'https://www.w3.org/2000/xmlns/'
-};
-
-var qualify = function(name) {
-  var prefix;
-  if (typeof name === 'object') {
-    prefix = name.prefix || name.namespaceURI;
-    return {
-      name: name.name || name.localName,
-      prefix: namespaces[prefix] || prefix
-    };
-  }
-  var colon = name.indexOf(':');
-  if (colon > -1) {
-    prefix = name.substr(0, colon);
-    prefix = namespaces[prefix] || prefix;
-    name = name.substr(colon + 1);
-  }
-  return {
-    name: name,
-    prefix: prefix
-  };
-};
-
 var setProps = function(el, props) {
   for (var prop in props) {
     var value = props[prop];
-    if (prop.indexOf('on') === 0 && typeof value === 'function') {
-      el[prop] = value;
-    } else {
-      prop = qualify(prop);
-      if (prop.prefix) {
-        el.setAttributeNS(prop.prefix, prop.name, value);
-      } else {
-        el.setAttribute(prop.name, value);
+    if (value === null || value === undefined || typeof value === 'function') {
+      // XXX: don't add null, undefined, or function values
+      continue;
+    } else if (typeof value === 'object') {
+      switch (prop) {
+        case 'class':
+          value = formatClassName(value);
+          break;
+
+        case 'style':
+          value = formatStyle(value);
+          break;
+
+        default:
+          console.warn('unrecognized object prop:', prop, value);
+          continue;
       }
     }
+
+    var name = ns.qualify(prop);
+    if (name.namespaceURI) {
+      console.log('ns:', prop, name, value);
+      el.setAttributeNS(name.namespaceURI, name.localName, value);
+    } else {
+      el.setAttribute(name.localName, value);
+    }
   }
+};
+
+var formatStyle = function(obj) {
+  if (Array.isArray(obj)) {
+    return obj.join('; ');
+  }
+  return Object.keys(obj)
+    .map(function(key) {
+      return [
+        reformatCamelCase(key),
+        ': ',
+        obj[key],
+        ';'
+      ].join('');
+    })
+    .join(' ');
+};
+
+var reformatCamelCase = function(str) {
+  return str.replace(/[A-Z]/g, function(char) {
+    return '-' + char.toLowerCase();
+  });
+};
+
+var formatClassName = function(obj) {
+  if (Array.isArray(obj)) {
+    return obj.join(' ');
+  }
+  return Object.keys(obj).filter(function(key) {
+    return !!obj[key];
+  }).join(' ');
 };
