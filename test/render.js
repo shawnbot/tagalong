@@ -3,6 +3,7 @@ const assert = require('assert');
 const path = require('path');
 const tagalong = require('../');
 
+// namespace URIs, for convenience
 const ns = require('../src/ns');
 const XLINK = ns.prefixToURI.xlink;
 const XMLNS = ns.prefixToURI.xmlns;
@@ -20,21 +21,21 @@ before(function(done) {
   });
 });
 
-describe('render()', () => {
+describe('render()', function() {
 
-  it('throws an error when it cannot find its target', () => {
-    assert.throws(() => {
+  it('throws an error when it cannot find its target', function() {
+    assert.throws(function() {
       tagalong.render('#blargh', {foo: 'bar'});
     });
   });
 
-  it('accepts a CSS selector as a template target', () => {
+  it('accepts a CSS selector as a template target', function() {
     root.innerHTML = '<div t-text="foo"></div>';
     tagalong.render('#root', {foo: 'bar'});
     assert.equal(root.innerHTML, '<div>bar</div>');
   });
 
-  it('returns a render function for updates', () => {
+  it('returns a render function for updates', function() {
     root.innerHTML = '<div t-text="foo"></div>';
     var render = tagalong.render(root, {foo: 'bar'});
     assert.equal(root.innerHTML, '<div>bar</div>');
@@ -42,38 +43,38 @@ describe('render()', () => {
     assert.equal(root.innerHTML, '<div>qux</div>');
   });
 
-  it('renders a key expression as text', () => {
+  it('renders a key expression as text', function() {
     root.innerHTML = '<div t-text="foo"></div>';
     tagalong.render(root, {foo: 'bar'});
     assert.equal(root.innerHTML, '<div>bar</div>');
   });
 
-  it('renders a nested object key as text', () => {
+  it('renders a nested object key as text', function() {
     root.innerHTML = '<div t-text="foo.bar"></div>';
     tagalong.render(root, {foo: {bar: 'baz'}});
     assert.equal(root.innerHTML, '<div>baz</div>');
   });
 
-  describe('t- attributes', () => {
-    it('renders expression attributes with the "t-" prefix', () => {
+  describe('t- attributes', function() {
+    it('renders expression attributes with the "t-" prefix', function() {
       root.innerHTML = '<div t-id="foo.bar">hi</div>';
       tagalong.render(root, {foo: {bar: 'baz'}});
       assert.equal(root.innerHTML, '<div id="baz">hi</div>');
     });
 
-    it('renders template strings in prefixed attrs', () => {
+    it('renders template strings in prefixed attrs', function() {
       root.innerHTML = '<a t-href="#{{ id }}">hi</a>';
       tagalong.render(root, {id: 'foo'});
       assert.equal(root.innerHTML, '<a href="#foo">hi</a>');
     });
 
-    it('does not confuse template strings and fat arrows', () => {
+    it('does not confuse template strings and fat arrows', function() {
       root.innerHTML = '<a t-title="x => {{ id }}">hi</a>';
       tagalong.render(root, {id: 'foo'});
       assert.equal(root.innerHTML, '<a title="x => foo">hi</a>');
     });
 
-    it('re-renders attributes with the "t-" prefix', () => {
+    it('re-renders attributes with the "t-" prefix', function() {
       root.innerHTML = '<div t-class="foo.bar">hi</div>';
       var render = tagalong.render(root, {foo: {bar: 'baz'}});
       assert.equal(root.innerHTML, '<div class="baz">hi</div>');
@@ -82,14 +83,14 @@ describe('render()', () => {
     });
   });
 
-  describe('t-class attribute', () => {
-    it('renders class names with t-class="{names}"', () => {
+  describe('t-class attribute', function() {
+    it('renders class names with t-class="{names}"', function() {
       root.innerHTML = '<div t-class="foo">hi</div>';
       var render = tagalong.render(root, {foo: {bar: true, baz: false}});
       assert.equal(root.innerHTML, '<div class="bar">hi</div>');
     });
 
-    it('re-renders class names with t-class="{names}"', () => {
+    it('re-renders class names with t-class="{names}"', function() {
       root.innerHTML = '<div t-class="foo">hi</div>';
       var render = tagalong.render(root, {foo: {bar: true, baz: false}});
       assert.equal(root.innerHTML, '<div class="bar">hi</div>');
@@ -98,14 +99,14 @@ describe('render()', () => {
     });
   });
 
-  describe('t-style attribute', () => {
-    it('renders inline styles with t-style="{properties}"', () => {
+  describe('t-style attribute', function() {
+    it('renders inline styles with t-style="{properties}"', function() {
       root.innerHTML = '<div t-style="x">hi</div>';
       var render = tagalong.render(root, {x: {color: 'green', fontWeight: 'bold'}});
       assert.equal(root.innerHTML, '<div style="color: green; font-weight: bold;">hi</div>');
     });
 
-    it('re-renders inline styles with t-style="{properties}"', () => {
+    it('re-renders inline styles with t-style="{properties}"', function() {
       root.innerHTML = '<div t-style="x">hi</div>';
       var render = tagalong.render(root, {x: {color: 'green', fontWeight: 'bold'}});
       assert.equal(root.innerHTML, '<div style="color: green; font-weight: bold;">hi</div>');
@@ -114,8 +115,8 @@ describe('render()', () => {
     });
   });
 
-  describe('t-if', () => {
-    it('interprets if statements', () => {
+  describe('t-if', function() {
+    it('interprets if statements', function() {
       root.innerHTML = '<div t-if="foo">yes</div>';
       var render = tagalong.render(root, {foo: 0});
       assert.equal(root.innerHTML, '');
@@ -123,7 +124,7 @@ describe('render()', () => {
       assert.equal(root.innerHTML, '<div>yes</div>');
     });
 
-    it('interprets if/else statements', () => {
+    it('interprets if/else statements', function() {
       root.innerHTML = '<div t-if="foo">yes</div><span t-else>no</span>';
       var render = tagalong.render(root, {foo: 0});
       assert.equal(root.innerHTML, '<span>no</span>');
@@ -132,44 +133,44 @@ describe('render()', () => {
     });
   });
 
-  describe('t-each', () => {
-    it('iterates over arrays', () => {
+  describe('t-each', function() {
+    it('iterates over arrays', function() {
       root.innerHTML = '<b t-each="things">{{.}}</b>';
       tagalong.render(root, {things: ['foo', 'bar']});
       assert.equal(root.innerHTML, '<b>foo</b><b>bar</b>');
     });
 
-    it('sets the $i variable', () => {
+    it('sets the $i variable', function() {
       root.innerHTML = '<b t-each="things">{{.}}@{{$i}}</b>';
       tagalong.render(root, {things: ['foo', 'bar']});
       assert.equal(root.innerHTML, '<b>foo@0</b><b>bar@1</b>');
     });
   });
 
-  describe('t-foreach', () => {
-    it('iterates over arrays', () => {
+  describe('t-foreach', function() {
+    it('iterates over arrays', function() {
       root.innerHTML = '<b t-foreach="things"><i>{{.}}</i></b>';
       tagalong.render(root, {things: ['foo', 'bar']});
       assert.equal(root.innerHTML, '<b><i>foo</i><i>bar</i></b>');
     });
 
-    it('sets the $i variable', () => {
+    it('sets the $i variable', function() {
       root.innerHTML = '<b t-foreach="things">{{.}}@{{$i}};</b>';
       tagalong.render(root, {things: ['foo', 'bar']});
       assert.equal(root.innerHTML, '<b>foo@0;bar@1;</b>');
     });
   });
 
-  describe('t-skip', () => {
-    it('skips elements with t-skip attributes', () => {
+  describe('t-skip', function() {
+    it('skips elements with t-skip attributes', function() {
       root.innerHTML = 'hello, world<span t-skip>!</span>';
       var render = tagalong.render(root, {});
       assert.equal(root.innerHTML, 'hello, world');
     });
   });
 
-  describe('t-with', () => {
-    it('does the right thing', () => {
+  describe('t-with', function() {
+    it('does the right thing', function() {
       root.innerHTML = [
         '<h1 t-with="items">',
           '<b t-text="length">0</b>',
@@ -185,8 +186,8 @@ describe('render()', () => {
     });
   });
 
-  describe('text expressions', () => {
-    it('interoplates {{ expressions }}', () => {
+  describe('text expressions', function() {
+    it('interoplates {{ expressions }}', function() {
       root.innerHTML = 'Hello, {{ world }}!';
       var render = tagalong.render(root, {world: 'Earth'});
       assert.equal(root.innerHTML, 'Hello, Earth!');
@@ -194,7 +195,7 @@ describe('render()', () => {
       assert.equal(root.innerHTML, 'Hello, world!');
     });
 
-    it("doesn't get greedy with curlies", () => {
+    it("doesn't get greedy with curlies", function() {
       root.innerHTML = 'The {{x}} and the {{y || x}}';
       var render = tagalong.render(root, {x: 'birds', y: 'bees'});
       assert.equal(root.innerHTML, 'The birds and the bees');
@@ -203,21 +204,41 @@ describe('render()', () => {
     });
   });
 
-  it('preserves namespaces', () => {
+  xit('preserves namespaces', function() {
     root.innerHTML = '<svg xmlns:xlink="http://www.w3.org/TR/xlink/"></svg>';
+
+    var svg = root.querySelector('svg');
+    var nsURI = svg.namespaceURI;
+    /*
+     * This should cover a bad assumption on my part, namely that
+     * we're always executing in a compliant HTML5 DOM, in which
+     * namespaced elements like <svg> are implicitly namespaced.
+     */
+    assert.equal(nsURI, SVG,
+                 'wrong <svg> namespaceURI before morph: ' + nsURI);
+
     tagalong.render(root, {
       items: [
         {href: '#foo'},
         {href: '#bar'}
       ]
     });
+
+    svg = root.querySelector('svg');
+    nsURI = svg.namespaceURI;
+
     assert.equal(
-      root.innerHTML,
+      svg.outerHTML,
       '<svg xmlns:xlink="http://www.w3.org/TR/xlink/"></svg>'
     );
+
+    // XXX jsdom: XHTML, seriously? very weird.
+    assert.equal(nsURI, SVG,
+                 'wrong <svg> namespaceURI after morph: ' + nsURI);
+    assert.equal(svg.getAttributeNS(XMLNS, 'xlink'), XLINK);
   });
 
-  it('preserves namespaces in templated attributes', () => {
+  it('preserves namespaces in templated attributes', function() {
     root.innerHTML = (
       '<svg>' +
       '<a t-each="items" xlink:t-href="href"></a>' +
@@ -240,9 +261,9 @@ describe('render()', () => {
     );
   });
 
-  describe('expressions', () => {
+  describe('expressions', function() {
 
-    it('inherits scope from the calling context', () => {
+    it('inherits scope from the calling context', function() {
       root.innerHTML = '<div t-text="lower(name)">Joe</div>';
       var render = tagalong.render(root, null, {
         lower: function(name) { return name.toLowerCase(); }
@@ -251,7 +272,7 @@ describe('render()', () => {
       assert.equal(root.innerHTML, '<div>bill</div>');
     });
 
-    it('aliases symbols', () => {
+    it('aliases symbols', function() {
       root.innerHTML = [
         '<ul t-foreach="." t-as="item">',
           '<li t-text="item">Jill</li>',
@@ -262,7 +283,7 @@ describe('render()', () => {
       assert.equal(root.innerHTML, '<ul><li>Jill</li><li>Jane</li><li>Joe</li></ul>');
     });
 
-    it('interprets "." as identity', () => {
+    it('interprets "." as identity', function() {
       root.innerHTML = '<b t-text=".">foo</b>';
       tagalong.render(root, 'bar');
       assert.equal(root.innerHTML, '<b>bar</b>');
@@ -272,7 +293,7 @@ describe('render()', () => {
       assert.equal(root.innerHTML, '<b>baz</b>');
     });
 
-    it('understands fat arrows', () => {
+    it('understands fat arrows', function() {
       var variants = [
         '<span t-with="x => x[0]">{{ . }}</span>',
         '<span t-with="(x) => x[0]">{{ . }}</span>',
@@ -286,7 +307,7 @@ describe('render()', () => {
       });
     });
 
-    it('passes scope to fat arrows', () => {
+    it('passes scope to fat arrows', function() {
       root.innerHTML = '<b t-text="x => f(x)"></b>';
       tagalong.render(root, 10, {
         f: function(x) { return x * x; }
@@ -296,8 +317,8 @@ describe('render()', () => {
 
   });
 
-  xdescribe('on* attributes', () => {
-    it('should not evaluate on* attrs', (done) => {
+  xdescribe('on* attributes', function() {
+    it('should not evaluate on* attrs', function(done) {
       root.innerHTML = '<a id="foo" t-onclick="click">hi</a>';
       var rendered = false;
       tagalong.render(root, {
