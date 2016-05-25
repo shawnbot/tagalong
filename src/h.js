@@ -36,6 +36,9 @@ module.exports = function(name, props, children) {
 
 var setProps = function(el, props) {
   for (var prop in props) {
+    if (!props.hasOwnProperty(prop)) {
+      continue;
+    }
     var value = props[prop];
     if (value === null || value === undefined || typeof value === 'function') {
       // XXX: don't add null, undefined, or function values

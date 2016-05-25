@@ -32,6 +32,9 @@ module.exports.getAttributeMap = function(node) {
 module.exports.interpolateAttributes = function(attrMap, data) {
   var attrs = {};
   for (var key in attrMap) {
+    if (!attrMap.hasOwnProperty(key)) {
+      continue;
+    }
     var value = attrMap[key];
     // only apply functions for attrs that aren't event handlers
     if (typeof value === 'function' && key.indexOf('on') !== 0) {

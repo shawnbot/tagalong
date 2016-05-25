@@ -1,3 +1,4 @@
+/* eslint no-new-func: "warn" */
 var ARROW_PATTERN = /^\s*\(?(\s*\w+\s*(,\s*\w+\s*)*)\)?\s*=>\s*({([^}]+)}|(.+))$/;
 
 var isArrow = function(expression) {

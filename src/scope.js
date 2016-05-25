@@ -14,7 +14,6 @@ var renderWith = function(fn, render, symbol) {
 };
 
 var forEach = function(data, fn, symbol) {
-  var previous;
   var iterate = symbol
     ? symbolSetter(symbol, fn)
     : fn;

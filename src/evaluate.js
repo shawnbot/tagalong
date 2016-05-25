@@ -1,3 +1,4 @@
+/* eslint no-new-func: "warn" */
 var arrow = require('./arrow');
 var functor = require('./functor');
 
@@ -41,7 +42,7 @@ var evaluator = function(expression) {
 
 module.exports = {
   evaluate: evaluate,
-  evaluator: evaluator,
+  evaluator: evaluator
 };
 
 function identity(d) {
