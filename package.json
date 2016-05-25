@@ -8,14 +8,18 @@
     "morphdom": "^1.3.0"
   },
   "devDependencies": {
+    "eslint": "^2.10.2",
+    "eslint-config-airbnb-base": "^3.0.1",
+    "eslint-plugin-import": "^1.8.0",
     "jsdom": "^9.1.0",
     "mocha": "^2.3.3",
     "webpack": "^1.12.3"
   },
   "scripts": {
-    "test": "mocha",
+    "build": "webpack",
+    "lint": "eslint src/**/*.js",
     "start": "webpack --watch",
-    "build": "webpack"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
