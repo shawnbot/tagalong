@@ -295,10 +295,12 @@ Event handling can happen in three different ways:
 
   ```html
   <a id="link" t-onclick="(d, e) => d.click(e)">hi</a>
+  <script>
   tagalong.render('#link', {
     click: function(e) {
     }
   });
+  </script>
   ```
 
 1. Use `on*` attributes. **This is not suggested.**
