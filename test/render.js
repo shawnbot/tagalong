@@ -16,9 +16,14 @@ before(function(done) {
     if (errors) return done(errors[0]);
     global.window = _window;
     global.document = _window.document;
+    global.Node = _window.Node;
     root = _window.document.getElementById('root');
     done();
   });
+});
+
+afterEach(function() {
+  root.innerHTML = '';
 });
 
 describe('render()', function() {
@@ -204,38 +209,24 @@ describe('render()', function() {
     });
   });
 
-  xit('preserves namespaces', function() {
-    root.innerHTML = '<svg xmlns:xlink="http://www.w3.org/TR/xlink/"></svg>';
-
-    var svg = root.querySelector('svg');
+  it('preserves element namespaces', function() {
+    var svg = root.appendChild(document.createElementNS(SVG, 'svg'));
     var nsURI = svg.namespaceURI;
     /*
      * This should cover a bad assumption on my part, namely that
      * we're always executing in a compliant HTML5 DOM, in which
-     * namespaced elements like <svg> are implicitly namespaced.
+     * elements like <svg> are implicitly namespaced.
      */
     assert.equal(nsURI, SVG,
                  'wrong <svg> namespaceURI before morph: ' + nsURI);
 
-    tagalong.render(root, {
-      items: [
-        {href: '#foo'},
-        {href: '#bar'}
-      ]
-    });
+    tagalong.render(root, {});
 
-    svg = root.querySelector('svg');
+    svg = root.firstChild;
+    console.log('rendered:', svg.outerHTML, svg.namespaceURI);
     nsURI = svg.namespaceURI;
-
-    assert.equal(
-      svg.outerHTML,
-      '<svg xmlns:xlink="http://www.w3.org/TR/xlink/"></svg>'
-    );
-
-    // XXX jsdom: XHTML, seriously? very weird.
     assert.equal(nsURI, SVG,
                  'wrong <svg> namespaceURI after morph: ' + nsURI);
-    assert.equal(svg.getAttributeNS(XMLNS, 'xlink'), XLINK);
   });
 
   it('preserves namespaces in templated attributes', function() {
@@ -315,24 +306,6 @@ describe('render()', function() {
       assert.equal(root.innerHTML, '<b>100</b>');
     });
 
-  });
-
-  xdescribe('on* attributes', function() {
-    it('should not evaluate on* attrs', function(done) {
-      root.innerHTML = '<a id="foo" t-onclick="click">hi</a>';
-      var rendered = false;
-      tagalong.render(root, {
-        click: function(e) {
-          assert.equal(rendered, false, 'this should not call until after rendering');
-          assert.equal(e.target.id, 'foo');
-          done();
-        }
-      });
-      var link = root.querySelector('a');
-      assert.ok(!link.hasAttribute('onclick'));
-      rendered = true;
-      link.dispatchEvent(new window.CustomEvent('click'));
-    });
   });
 
 });
