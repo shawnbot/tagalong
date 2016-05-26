@@ -112,6 +112,51 @@ tagalong.render('#template', {
       */})
     },
 
+    {
+      id: 'events',
+      title: 'Events',
+      template: multiline(function(){/*
+<div id="template">
+  <p>
+    Selected
+    {{ selected.length }}
+    {{ selected.length === 1 ? 'person' : 'people' }}:
+  </p>
+  <ul>
+    <li t-each="people" t-onclick="(d, e) => toggle(d)">
+      <label>
+        <input type="checkbox" name="people" t-value="id"
+          t-checked="selected ? 'checked' : null">
+        {{ first }} {{ last }}
+      </label>
+    </li>
+  </ul>
+</div>
+      */}),
+      script: multiline(function(){/*
+var data = {
+  people: [
+    {first: 'Jill', last: 'Hughes', selected: true},
+    {first: 'Jack', last: 'Adams', selected: false},
+    {first: 'Jo', last: 'Weaver', selected: false}
+  ]
+};
+
+var render = tagalong.render('#template', data, {
+  get selected() {
+    return data.people.filter(function(d) {
+      return d.selected;
+    });
+  },
+  toggle: function(d) {
+    console.log('toggle:', d);
+    d.selected = !d.selected;
+    render(data);
+  }
+});
+      */})
+    }
+
   ];
 
   var ex = document.querySelector('#examples');
