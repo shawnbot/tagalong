@@ -1,0 +1,4 @@
+[submodule "src"]
+	path = src
+	url = git://github.com/shawnbot/tagalong.git
+	branch = morphdom
