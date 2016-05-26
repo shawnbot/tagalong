@@ -235,6 +235,7 @@ tagalong.render('#toc', {
 If the result is an array, the values are assumed to be `property: value` pairs
 and are joined with semicolons.
 
+
 #### Other Attributes
 Any other attribute with a `t-` prefix is evaluated as a JavaScript expression
 and has its `t-` prefix stripped in the output, e.g.
@@ -243,6 +244,64 @@ and has its `t-` prefix stripped in the output, e.g.
 <input name="first_name" t-value="first_name">
 <input name="attending" t-checked="attending ? 'checked' : null">
 ```
+### Events
+Event handling can happen in three different ways:
+
+1. Use event delegation to capture bubbling events at the top level of your
+   template, which obviates the need for listeners on individual elements, e.g.
+
+  ```js
+  var delegate = function(selector, callback) {
+    return function(e) {
+      if (e.target.matches(selector)) {
+        callback.apply(this, arguments);
+      }
+    };
+  };
+  root.addEventListener('click', delegate('a', function(e) {
+    alert('clicked:', e.target.href);
+  }));
+  ```
+
+  :warning: This won't work with events that don't bubble, such as `focus` and
+  `blur`.
+
+1. Use `t-on*` attributes to bind your listeners to template data:
+
+  ```html
+  <ul id="root">
+    <li t-each="items">
+      <a t-onclick="(item, event) => click(item)">{{ . }}</a>
+    </li>
+  </ul>
+  <script>
+  var render = tagalong.render('#root', {
+    items: [
+      'foo',
+      'bar',
+      'baz'
+    ]
+  }, {
+    click: function(d) {
+      alert('clicked', d);
+    }
+  });
+  </script>
+  ```
+
+  Note that "unqualified" listener references (such as `click()`, above) must
+  be present in the `context` (3rd) argument to [`tagalong.render()`](#render).
+  If you want to call a function of the data, you can do it like this:
+
+  ```html
+  <a id="link" t-onclick="(d, e) => d.click(e)">hi</a>
+  tagalong.render('#link', {
+    click: function(e) {
+    }
+  });
+  ```
+
+1. Use `on*` attributes. **This is not suggested.**
 
 ### `<t-template>` Custom Element
 Tagalong ships with a `<t-template>` [custom element]:
