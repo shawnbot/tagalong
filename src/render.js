@@ -12,6 +12,33 @@ var util = require('./util');
 var ns = require('./ns');
 var scope = require('./scope');
 
+// the symbol for stashing event handlers on DOM nodes
+var EVENTS = '[[t-events]]';
+
+// global morph options that update
+var morphOptions = {
+  onBeforeElUpdated: function(dest, src) {
+    if (EVENTS in dest) {
+      removeEventHandlers(dest);
+    }
+    if (EVENTS in src) {
+      dest[EVENTS] = src[EVENTS];
+      updateEventHandlers(dest);
+    }
+    return true;
+  },
+  onElUpdated: function(el) {
+    if (EVENTS in el) {
+      updateEventHandlers(el);
+    }
+  },
+  onNodeDiscarded: function(node) {
+    if (EVENTS in node) {
+      removeEventHandlers(node);
+    }
+  }
+};
+
 /**
  * Returns a function that generates an interpolated string for the
  * given text node (`node.nodeType === Node.TEXT_NODE`).
@@ -21,6 +48,50 @@ var scope = require('./scope');
  */
 var createTextRenderer = function(node) {
   return compose.stringify(interpolate.compile(node.nodeValue));
+};
+
+/**
+ * "Pluck" event handlers from an attribute map, removing them from
+ * the map. If no event handlers are found, the return value is
+ * `undefined`.
+ *
+ * @param {Object} attrMap
+ * @return {Object}
+ */
+var pluckEventHandlers = function(attrMap) {
+  var handlers = undefined;
+  for (var name in attrMap) {
+    var value = attrMap[name];
+    if (name.indexOf('on') === 0 && typeof value === 'function') {
+      if (!handlers) {
+        handlers = {};
+      }
+      handlers[name.substr(2)] = value;
+      delete attrMap[name];
+    }
+  }
+  return handlers;
+};
+
+var renderEventHandlers = function(render, handlers) {
+  return function(data, index) {
+    var node = render.apply(this, arguments);
+    var context = this;
+    var callback = function(event) {
+      // XXX in theory, this could fail if one
+      // of the handlers gets removed (not
+      // sure how that would happen, though)
+      handlers[event.type].call(context, data, event);
+    };
+    if (node) {
+      var bound = {};
+      for (var type in handlers) {
+        bound[type] = callback;
+      }
+      node[EVENTS] = bound;
+    }
+    return node;
+  };
 };
 
 /**
@@ -40,6 +111,7 @@ var createElementRenderer = function(node) {
 
   var name = ns.getPrefixedName(node);
   var attrMap = attr.getAttributeMap(node);
+  var handlers = pluckEventHandlers(attrMap);
 
   var condition = node.hasAttribute(T.IF)
     ? code.evaluator(node.getAttribute(T.IF))
@@ -66,7 +138,7 @@ var createElementRenderer = function(node) {
   } else {
     var childRenderers = [].map.call(node.childNodes, compile);
     renderChildren = function(data) {
-      return childRenderers.map(function(renderChild) {
+      return childRenderers.map(function(renderChild, i) {
         return (typeof renderChild === 'function')
           ? renderChild.call(this, data)
           : renderChild;
@@ -75,7 +147,6 @@ var createElementRenderer = function(node) {
   }
 
   var renderNode = function(data) {
-    // console.log('rendering', node, 'with data:', data);
     if (condition && !condition.call(this, data)) {
       return undefined;
     }
@@ -84,6 +155,11 @@ var createElementRenderer = function(node) {
     var children = renderChildren.call(this, data);
     return h(name, attrs, children);
   };
+
+  // "attach" (as a single property) the event handler maps
+  if (handlers) {
+    renderNode = renderEventHandlers(renderNode, handlers);
+  }
 
   var eachExpression = node.getAttribute(T.EACH);
   var forEachExpression = node.getAttribute(T.FOREACH);
@@ -122,8 +198,8 @@ var createElementRenderer = function(node) {
  *
  * The returned function has the signatures:
  *
- * function(data)
- * function(node, data)
+ * function(data:*)
+ * function(node:Node, data:*)
  *
  * Where `data` is expected to be an object and, in the second form,
  * `node` is a target node to which the diffed DOM should be applied.
@@ -149,9 +225,8 @@ var createRenderer = function(src, context) {
     if ((!node && data) || node === data) {
       node = src;
     }
-    var dest = renderNode.call(context || this, data);
-    // console.log('morphing:', src.outerHTML, '->', dest.outerHTML);
-    return morphdom(src, dest);
+    var dest = renderNode.call(context, data);
+    return morphdom(src, dest, morphOptions);
   };
 };
 
@@ -194,6 +269,23 @@ var compile = function(node) {
       throw new Error('no renderer for node type: ' + node.nodeType);
   }
 };
+
+var removeEventHandlers = function(el) {
+  var events = el[EVENTS];
+  for (var type in events) {
+    el.removeEventListener(type, events[type]);
+    delete events[type];
+  }
+  delete el[EVENTS];
+};
+
+var updateEventHandlers = function(el) {
+  var events = el[EVENTS];
+  for (var type in events) {
+    el.addEventListener(type, events[type]);
+  }
+};
+
 
 
 module.exports.render = render;

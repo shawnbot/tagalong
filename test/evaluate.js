@@ -41,7 +41,8 @@ describe('evaluate()', () => {
     [
       'd => d.x',
       '(d) => d.y - 1',
-      '(d, i) => d.z.a - 2'
+      '(d, i) => d.z.a - 2',
+      '() => 1'
     ]
     .forEach(expr => {
       assert.strictEqual(e.evaluator(expr)(data), 1, expr);

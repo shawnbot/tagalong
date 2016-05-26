@@ -308,4 +308,37 @@ describe('render()', function() {
 
   });
 
+  describe('events', function() {
+
+    it('adds event handlers for t-on* attributes', function(done) {
+      root.innerHTML = '<a id="world" t-onclick="() => done()">hi</a>';
+
+      tagalong.render(root, {}, {done: done});
+
+      var a = root.querySelector('a');
+      assert.equal(a.hasAttribute('t-onclick'), false);
+      a.click();
+    });
+
+    it('handlers pass the event as the second argument', function(done) {
+      root.innerHTML = '<a id="world" t-onclick="(d, e) => click(e)">hi</a>';
+
+      tagalong.render(root, {}, {
+        click: function(e) {
+          assert.equal(e.type, 'click');
+          done();
+        }
+      });
+
+      root.querySelector('a').click();
+    });
+
+    it('perserves on* attributes', function() {
+      var html = root.innerHTML = '<a onclick="alert(1)"></a>';
+      tagalong.render(root, {});
+      assert.equal(root.innerHTML, html);
+    });
+
+  });
+
 });
