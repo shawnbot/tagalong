@@ -6,9 +6,11 @@
     <script src="tagalong.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/mode/css/css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/mode/htmlmixed/htmlmixed.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/theme/ttcn.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/theme/eclipse.min.css">
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
@@ -18,14 +20,19 @@
 
     <section id="about" class="container">
       <p>Tagalong is a dead-simple JavaScript DOM templating library that lets
-      you "bind" data (objects, arrays, strings and numbers) to elements in
-      your document, creating new elements as needed and only updating the
-      elements that relate to data. For more information, check out the
-      <a href="https://github.com/shawnbot/tagalong/">project on GitHub</a>.</p>
+      you apply data (objects, arrays, strings and numbers) to elements in your
+      document, creating new elements as needed and only updating the elements
+      that relate to data. For more information, check out the <a
+      href="https://github.com/shawnbot/tagalong/">project on GitHub</a>.</p>
     </section>
 
     <section id="examples" class="examples container">
-      Examples: <a><span class="title"></span></a>
+      Examples:
+      <a t-each="." t-href="'#' + id"
+        t-data-template="template"
+        t-data-script="script">
+        <span t-text="title"></span>
+      </a>
     </section>
 
     <form class="container">
@@ -37,14 +44,14 @@
 
         <h2>HTML</h2>
         <textarea id="input-html">&lt;div id="template"&gt;
-  &lt;h2 class="title"&gt;title&lt;/h2&gt;
-  &lt;p class="desc"&gt;description&lt;/p&gt;
-  &lt;ul class="items"&gt;
-    &lt;li&gt;&lt;/li&gt;
+  &lt;h2&gt;{{ title }}&lt;/h2&gt;
+  &lt;p&gt;{{ desc }}&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li t-each="items"&gt;{{ . }}&lt;/li&gt;
   &lt;/ul&gt;
 &lt;/div&gt;</textarea>
         <h2>JavaScript</h2>
-        <textarea id="input-js">tagalong('#template', {
+        <textarea id="input-js">tagalong.render('#template', {
   title: 'This is the Title',
   desc: 'This is the description.',
   items: ['x', 'y', 'z']
@@ -59,6 +66,8 @@
         <h2>HTML</h2>
         <pre id="output-html" class="output">
         </pre>
+
+        <p>Took <span id="timer">0ms</span></p>
       </fieldset>
     </form>
 

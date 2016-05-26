@@ -19,7 +19,7 @@ body {
 }
 
 .CodeMirror {
-  height: 12em;
+  height: auto;
 }
 
 .output {

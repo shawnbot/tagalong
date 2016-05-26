@@ -1,20 +1,23 @@
 (function() {
 
-  var theme = 'ttcn';
+  var theme = 'eclipse';
   var inputHTML = CodeMirror.fromTextArea(document.querySelector('#input-html'), {
     lineNumbers: true,
+    viewportMargin: Infinity,
     theme: theme,
-    mode: 'text'
+    mode: 'htmlmixed'
   });
 
   var inputJS = CodeMirror.fromTextArea(document.querySelector('#input-js'), {
     lineNumbers: true,
+    viewportMargin: Infinity,
     theme: theme,
     mode: 'javascript'
   });
 
   var outputNode = document.querySelector('#output-node');
   var outputHTML = document.querySelector('#output-html');
+  var timer = document.querySelector('#timer');
 
   var change = (function(ms) {
     var timeout;
@@ -24,11 +27,13 @@
         // console.log('rendering...');
         outputNode.innerHTML = inputHTML.getValue();
         var script = inputJS.getValue();
+        var then = Date.now();
         try {
           eval(script);
         } catch (error) {
           console.error(error);
         }
+        timer.textContent = (Date.now() - then).toFixed(1) + 'ms';
         outputHTML.textContent = outputNode.innerHTML;
       }, force === true ? 10 : ms);
     };
@@ -59,14 +64,11 @@
       title: 'List',
       template: multiline(function(){/*
 <ul id="template">
-  <li>
-    <span class="first"></span>
-    <span class="last"></span>
-  </li>
+  <li t-each=".">{{ first }} {{ last }}</li>
 </ul>
       */}),
       script: multiline(function(){/*
-tagalong('#template', [
+tagalong.render('#template', [
   {first: 'Jill', last: 'Hughes'},
   {first: 'Jack', last: 'Adams'},
   {first: 'Jo', last: 'Weaver'}
@@ -79,71 +81,41 @@ tagalong('#template', [
       title: 'Table',
       template: multiline(function(){/*
 <table id="template">
-  <caption class="title"></caption>
+  <caption t-text="title"></caption>
   <thead>
-    <tr class="columns">
-      <th></th>
+    <tr>
+      <th t-each="columns">{{ title }}</th>
     </tr>
   </thead>
-  <tbody class="rows">
-    <tr>
-      <td></td>
+  <tbody>
+    <tr t-each="rows" t-as="row">
+      <td t-each="columns" t-as="col">{{ row[col.key] }}</td>
     </tr>
   </tbody>
 </table>
       */}),
       script: multiline(function(){/*
-tagalong('#template', {
-  columns: ['name', 'age', 'occupation'],
+tagalong.render('#template', {
+  title: 'Cool People',
   rows: [
-    ['Judy', 28, 'Developer'],
-    ['Jackie', 32, 'Designer'],
-    ['Rosie', 30, 'Riveter']
+    {name: 'Judy', age: 28, occ: 'Developer'},
+    {name: 'Jackie', age: 32, occ: 'Designer'},
+    {name: 'Rosie', age: 30, occ: 'Riveter'}
+  ]
+}, {
+  columns: [
+    {key: 'name', title: 'Name'},
+    {key: 'age', title: 'Name'},
+    {key: 'occ', title: 'Occupation'}
   ]
 });
       */})
     },
 
-    {
-      id: 'list-directives',
-      title: 'List with Directives',
-      template: multiline(function(){/*
-<div id="template">
-  <h2 class="title">title</h2>
-  <p class="desc">description</p>
-  <ul class="items">
-    <li><a data-bind="id" class="link"></a></li>
-  </ul>
-</div>
-      */}),
-      script: multiline(function(){/*
-tagalong('#template', {
-  title: 'This is the Title',
-  desc: 'This is the description.',
-  items: [
-    {id: 'x'},
-    {id: 'y'},
-    {id: 'z'},
-  ]
-}, {
-  items: {
-    link: {
-      '@href': function(d) {
-        return '#' + d.id;
-      }
-    }
-  }
-});
-      */})
-    }
-
   ];
 
-  var ex = tagalong('#examples', examples, {
-    '@href': function(d) { return '#' + d.id; },
-    '@data-template': 'template',
-    '@data-script': 'script'
-  });
+  var ex = document.querySelector('#examples');
+  tagalong.render(ex, examples);
 
   var selectedLink;
   var hashchange = function() {
