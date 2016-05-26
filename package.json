@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "dependencies": {
     "document-register-element": "^0.5.0",
-    "morphdom": "^1.3.0"
+    "morphdom": "github:shawnbot/morphdom#namespace-aware"
   },
   "devDependencies": {
     "eslint": "^2.10.2",
