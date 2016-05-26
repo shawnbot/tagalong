@@ -9,6 +9,7 @@ var T = require('./constants').T;
 var attr = require('./attrs');
 var dom = require('./dom');
 var util = require('./util');
+var ns = require('./ns');
 var scope = require('./scope');
 
 /**
@@ -37,7 +38,7 @@ var createElementRenderer = function(node) {
     return undefined;
   }
 
-  var name = node.nodeName.toLowerCase();
+  var name = ns.getPrefixedName(node);
   var attrMap = attr.getAttributeMap(node);
 
   var condition = node.hasAttribute(T.IF)
