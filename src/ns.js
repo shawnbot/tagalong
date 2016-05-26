@@ -25,7 +25,19 @@ var qualify = function(qname) {
   };
 };
 
+var getPrefixedName = function(node) {
+  var name = node.nodeName.toLowerCase();
+  var prefix = node.prefix;
+  if (!prefix && node.namespaceURI) {
+    prefix = uriToPrefix[node.namespaceURI];
+  }
+  return prefix
+    ? (prefix + ':' + name)
+    : name;
+};
+
 module.exports = {
+  getPrefixedName: getPrefixedName,
   prefixToURI: prefixToURI,
   uriToPrefix: uriToPrefix,
   qualify: qualify
