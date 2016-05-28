@@ -6,38 +6,21 @@ var h = require('./h');
 var morphdom = require('morphdom');
 
 var T = require('./constants').T;
+var T_ID = 't-id';
 var attr = require('./attrs');
 var dom = require('./dom');
 var util = require('./util');
 var ns = require('./ns');
 var scope = require('./scope');
 
-// the symbol for stashing event handlers on DOM nodes
+// this is our symbol on which we stash registered event handlers, so that
+// we can remove any registered handlers before adding new ones.
 var EVENTS = '[[t-events]]';
 
-// global morph options that update
-var morphOptions = {
-  onBeforeElUpdated: function(dest, src) {
-    if (EVENTS in dest) {
-      removeEventHandlers(dest);
-    }
-    if (EVENTS in src) {
-      dest[EVENTS] = src[EVENTS];
-      updateEventHandlers(dest);
-    }
-    return true;
-  },
-  onElUpdated: function(el) {
-    if (EVENTS in el) {
-      updateEventHandlers(el);
-    }
-  },
-  onNodeDiscarded: function(node) {
-    if (EVENTS in node) {
-      removeEventHandlers(node);
-    }
-  }
-};
+// we stash unique event handler ids and handlers by id, each bound to the
+// renered template data
+var eventHandlerId = 0;
+var eventHandlersById = {};
 
 /**
  * Returns a function that generates an interpolated string for the
@@ -73,22 +56,36 @@ var pluckEventHandlers = function(attrMap) {
   return handlers;
 };
 
-var renderEventHandlers = function(render, handlers) {
+/**
+ * This function returns a node rendering wrapper that registers event handlers
+ * for the rendered node by assigning it a unique `t-id` attribute and stashing
+ * a reference to the data-bound handlers in a corresponding hash. After the
+ * tree is morphed, each element with a `t-id` attribute is then matched up
+ * with its event handlers.
+ *
+ * @param {Function} render
+ * @param {Object} handlers each key is an event type, and the value is a
+ * callback function.
+ * @return {Function} a function that returns the rendered node
+ */
+var registerEventHandlers = function(render, handlers) {
   return function(data, index) {
     var node = render.apply(this, arguments);
-    var context = this;
-    var callback = function(event) {
-      // XXX in theory, this could fail if one
-      // of the handlers gets removed (not
-      // sure how that would happen, though)
-      handlers[event.type].call(context, data, event);
-    };
     if (node) {
+      var tid = ++eventHandlerId;
+      node.setAttribute(T_ID, tid);
+      var context = this;
+      var callback = function(event) {
+        // XXX in theory, this could fail if one
+        // of the handlers gets removed (not
+        // sure how that would happen, though)
+        handlers[event.type].call(context, data, event);
+      };
       var bound = {};
       for (var type in handlers) {
         bound[type] = callback;
       }
-      node[EVENTS] = bound;
+      eventHandlersById[tid] = bound;
     }
     return node;
   };
@@ -158,7 +155,7 @@ var createElementRenderer = function(node) {
 
   // "attach" (as a single property) the event handler maps
   if (handlers) {
-    renderNode = renderEventHandlers(renderNode, handlers);
+    renderNode = registerEventHandlers(renderNode, handlers);
   }
 
   var eachExpression = node.getAttribute(T.EACH);
@@ -218,16 +215,55 @@ var createRenderer = function(src, context) {
   }
 
   var renderNode = compile(src);
-  return function(node, data) {
+  return function(node, data, options) {
     if (arguments.length < 2) {
       data = node;
     }
     if ((!node && data) || node === data) {
       node = src;
     }
+    eventHandlerId = 0;
+    eventHandlersById = {};
     var dest = renderNode.call(context, data);
-    return morphdom(src, dest, morphOptions);
+    var result = morphdom(src, dest, options);
+    updateEventHandlers(result);
+    return result;
   };
+};
+
+/**
+ * Update all of the event handlers in the given DOM tree. This looks for all
+ * elements with the `t-id` attribute (including the root), removes any
+ * existing handlers (stashed in the `[[t-events]]` symbol), then looks up the
+ * registered handlers for the corresponding `t-id` value and adds those.
+ *
+ * @param {Element} root
+ */
+var updateEventHandlers = function(root) {
+  var elements = [].slice.call(root.querySelectorAll('[' + T_ID + ']'));
+  if (root.hasAttribute(T_ID)) {
+    elements.unshift(root);
+  }
+  elements.forEach(function(el) {
+    var events = el[EVENTS];
+    var type;
+    if (events) {
+      for (type in events) {
+        el.removeEventListener(type, events[type]);
+        delete events[type];
+      }
+      delete el[EVENTS];
+    }
+    var tid = el.getAttribute(T_ID);
+    events = eventHandlersById[tid];
+    if (events) {
+      for (type in events) {
+        el.addEventListener(type, events[type], true);
+      }
+      el[EVENTS] = events;
+    }
+    el.removeAttribute(T_ID);
+  });
 };
 
 /**
@@ -269,23 +305,6 @@ var compile = function(node) {
       throw new Error('no renderer for node type: ' + node.nodeType);
   }
 };
-
-var removeEventHandlers = function(el) {
-  var events = el[EVENTS];
-  for (var type in events) {
-    el.removeEventListener(type, events[type]);
-    delete events[type];
-  }
-  delete el[EVENTS];
-};
-
-var updateEventHandlers = function(el) {
-  var events = el[EVENTS];
-  for (var type in events) {
-    el.addEventListener(type, events[type]);
-  }
-};
-
 
 
 module.exports.render = render;

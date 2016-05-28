@@ -333,6 +333,43 @@ describe('render()', function() {
       root.querySelector('a').click();
     });
 
+    it('adds per-element handlers for iterants', function() {
+      root.innerHTML = '<a t-each="." t-onclick="(d) => push(d)"></a>';
+      var data = ['x', 'y', 'z'];
+      var values = [];
+      tagalong.render(root, data, {
+        push: (d) => values.push(d)
+      });
+      [].forEach.call(root.querySelectorAll('a'), (a) => {
+        a.click();
+      });
+      assert.deepEqual(values, data);
+    });
+
+    it('removes event handlers when re-rendered', function() {
+      var data = ['x', 'y', 'z'];
+      var values = [];
+      var context = {
+        push: (d) => values.push(d)
+      };
+
+      var expected = '<a>x</a><a>y</a><a>z</a>';
+
+      root.innerHTML = '<a t-each="." t-onclick="(d) => push(d)">{{ . }}</a>';
+      tagalong.render(root, data, context);
+      assert.equal(root.innerHTML, expected);
+
+      root.innerHTML = '<a t-each=".">{{ . }}</a>';
+      tagalong.render(root, data, context);
+      assert.equal(root.innerHTML, expected);
+
+      [].forEach.call(root.querySelectorAll('a'), (a) => {
+        a.click();
+      });
+
+      assert.deepEqual(values, []);
+    });
+
     it('perserves on* attributes', function() {
       var html = root.innerHTML = '<a onclick="alert(1)"></a>';
       tagalong.render(root, {});
