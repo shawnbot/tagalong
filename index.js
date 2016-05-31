@@ -26,7 +26,12 @@
       timeout = setTimeout(function() {
         // console.log('rendering...');
         outputNode.innerHTML = inputHTML.getValue();
-        var script = inputJS.getValue();
+
+        // wrap the script in an IIFE, so it doesn't leak globals
+        var script = '(function() {' +
+          inputJS.getValue() +
+        ' })()';
+
         var then = Date.now();
         try {
           eval(script);
@@ -123,10 +128,8 @@ tagalong.render('#template', {
     {{ selected.length === 1 ? 'person' : 'people' }}:
   </p>
   <ul>
-    <li t-each="people" t-onclick="(d, e) => toggle(d)">
-      <label>
-        <input type="checkbox" name="people" t-value="id"
-          t-checked="selected ? 'checked' : null">
+    <li t-each="people" t-onclick="(d, e) => toggle(d)"
+      t-style="{color: selected ? 'red' : 'inherit'}">
         {{ first }} {{ last }}
       </label>
     </li>
