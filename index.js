@@ -197,6 +197,65 @@ var render = tagalong.render('#template', data, {
   }
 });
       */})
+    },
+
+    {
+      id: 'form',
+      title: 'Interactions',
+
+      description: multiline(function(){/*
+This is a more complicated example that uses data-aware event
+handlers to add and remove data elements then re-render the list.
+The t-onsubmit handler at the template's top level prevents click
+events from submitting the surrounding form.
+      */}),
+
+      template: multiline(function(){/*
+<div id="template" t-onsubmit="(d, e) => e.preventDefault()">
+  <p>People:</p>
+  <ul t-if="people.length">
+    <li t-each="people">
+      {{ first }} {{ last }}
+      <button type="button"
+        t-onclick="person => remove(person)">&times;</button>
+    </li>
+  </ul>
+  <p t-else>No people!</p>
+  <p>
+    <label>First: <input name="first"></label><br>
+    <label>Last: <input name="last"></label><br>
+    <button type="button"
+      t-onclick="d => add(d.people)">Add</button>
+  </p>
+</div>
+      */}),
+
+      script: multiline(function(){/*
+var data = {
+  people: [
+    {first: 'Jill', last: 'Hughes'},
+    {first: 'Jack', last: 'Adams'},
+    {first: 'Jo', last: 'Weaver'}
+  ]
+};
+
+var render = tagalong.render('#template', data, {
+  remove: function(person) {
+    var i = data.people.indexOf(person);
+    data.people.splice(i, 1);
+    render();
+  },
+  add: function(people) {
+    var person = {
+      first: document.querySelector('[name=first]').value,
+      last: document.querySelector('[name=last]').value
+    };
+    people.push(person);
+    render();
+  }
+// bind subsequent render calls to the data
+}).bind(null, data);
+      */})
     }
 
   ];
