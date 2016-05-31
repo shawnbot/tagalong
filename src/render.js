@@ -118,6 +118,9 @@ var createElementRenderer = function(node) {
     if (condition) {
       throw new Error('element has both t-if and t-else attributes');
     }
+    // TODO: ELSEIF should just collect all of the previous IF and
+    // ELSEIF nodes and negate them. Some checking should happen here to
+    // ensure that they're specified in the correct order.
     var ifSibling = dom.getPreviousSibling(node, '[' + T.IF + ']');
     if (!ifSibling) {
       throw new Error('element with t-else has no matching t-if sibling');
