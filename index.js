@@ -152,7 +152,6 @@ var render = tagalong.render('#template', data, {
     });
   },
   toggle: function(d) {
-    console.log('toggle:', d);
     d.selected = !d.selected;
     render(data);
   }
