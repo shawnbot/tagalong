@@ -342,8 +342,9 @@ describe('render()', function() {
       });
       [].forEach.call(root.querySelectorAll('a'), (a) => {
         a.click();
+        a.click();
       });
-      assert.deepEqual(values, data);
+      assert.deepEqual(values, 'x x y y z z'.split(' '));
     });
 
     it('removes event handlers when re-rendered', function() {
