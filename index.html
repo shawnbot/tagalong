@@ -24,9 +24,12 @@
       Examples:
       <a t-each="." t-href="'#' + id"
         t-data-template="template"
-        t-data-script="script">
+        t-data-script="script"
+        t-onclick="d => select(d)"
+        t-class="d => ({active: selected === d})">
         <span t-text="title"></span>
       </a>
+      <p t-text="selected ? selected.description : null"></p>
     </section>
 
     <form class="container">

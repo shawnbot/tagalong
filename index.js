@@ -60,6 +60,7 @@
     {
       id: '',
       title: 'Default',
+      description: 'A basic example.',
       template: inputHTML.getValue(),
       script: inputJS.getValue()
     },
@@ -120,6 +121,13 @@ tagalong.render('#template', {
     {
       id: 'events',
       title: 'Events',
+
+      description: multiline(function(){/*
+This example demonstrates how using "t-on" attributes to attach
+data-aware event handlers to individual elements. Clicking on a
+checkbox re-renders the list and the count above.
+      */}),
+
       template: multiline(function(){/*
 <div id="template">
   <p>
@@ -128,14 +136,19 @@ tagalong.render('#template', {
     {{ selected.length === 1 ? 'person' : 'people' }}:
   </p>
   <ul>
-    <li t-each="people" t-onclick="(d, e) => toggle(d)"
-      t-style="{color: selected ? 'red' : 'inherit'}">
+    <li t-each="people">
+      <label>
+        <input type="checkbox" name="people"
+          t-checked="selected ? 'checked' : null"
+          t-value="{{ first }} {{ last }}"
+          t-onclick="(d, e) => toggle(d)">
         {{ first }} {{ last }}
       </label>
     </li>
   </ul>
 </div>
       */}),
+
       script: multiline(function(){/*
 var data = {
   people: [
@@ -162,19 +175,29 @@ var render = tagalong.render('#template', data, {
   ];
 
   var ex = document.querySelector('#examples');
-  tagalong.render(ex, examples);
+  var selectedExample = examples[0];
+  if (location.hash) {
+    selectedExample = examples.filter(function(d) {
+        return d.id === location.hash.substr(1);
+    })[0] || selectedExample;
+  }
 
-  var selectedLink;
+  var renderExamples = tagalong.render(ex, examples, {
+    selected: selectedExample,
+    select: function(d) {
+      this.selected = d;
+      renderExamples(examples);
+    }
+  });
+
   var hashchange = function() {
-    if (selectedLink) selectedLink.classList.remove('active');
     var link = document.querySelector('[href="' + location.hash + '"]');
-    if (!link) link = ex.querySelector('a[href]');
+    if (!link) {
+      link = ex.querySelector('a[href]');
+    }
     if (link) {
-      link.classList.add('active');
-      // console.log('activating example:', link);
       inputHTML.setValue(link.getAttribute('data-template'));
       inputJS.setValue(link.getAttribute('data-script'));
-      selectedLink = link;
       change(true);
     } else {
       console.log('no such example:', location.hash);
