@@ -249,7 +249,7 @@ var updateEventHandlers = function(root) {
     var type;
     if (events) {
       for (type in events) {
-        el.removeEventListener(type, events[type]);
+        el.removeEventListener(type, events[type], true);
         delete events[type];
       }
       delete el[EVENTS];
