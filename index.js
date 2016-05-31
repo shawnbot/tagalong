@@ -57,22 +57,40 @@
   };
 
   var examples = [
+
     {
       id: '',
       title: 'Default',
-      description: 'A basic example.',
+      description: multiline(function(){/*
+A basic example with templated text nodes and a repeated list
+item.
+      */}),
       template: inputHTML.getValue(),
       script: inputJS.getValue()
     },
 
     {
       id: 'list',
-      title: 'List',
-      template: multiline(function(){/*
-<ul id="template">
-  <li t-each=".">{{ first }} {{ last }}</li>
-</ul>
+      title: 'Lists',
+      description: multiline(function(){/*
+Iterate over a list of values with t-each="expression" (to repeat a
+single element) or t-foreach="expression" (to repeat an element's
+children).
       */}),
+
+      template: multiline(function(){/*
+<div id="template">
+  <p>With t-each on each list item:</p>
+  <ul>
+    <li t-each=".">{{ first }} {{ last }}</li>
+  </ul>
+  <p>With t-foreach on the enclosing list:</p>
+  <ul t-foreach=".">
+    <li>{{ first }} {{ last }}</li>
+  </ul>
+</div>
+      */}),
+
       script: multiline(function(){/*
 tagalong.render('#template', [
   {first: 'Jill', last: 'Hughes'},
@@ -80,11 +98,20 @@ tagalong.render('#template', [
   {first: 'Jo', last: 'Weaver'}
 ]);
       */})
+
     },
 
     {
       id: 'table',
       title: 'Table',
+      description: multiline(function(){/*
+This example shows one way of rendering a data table and
+demonstrates how the properties of both the data and context objects
+(the second and third arguments to tagalong.render) are available in
+dynamic expressions. The t-as attribute is used on each row to alias
+the row object to a named variable for use in each cell expression.
+      */}),
+
       template: multiline(function(){/*
 <table id="template">
   <caption t-text="title"></caption>
@@ -111,7 +138,7 @@ tagalong.render('#template', {
 }, {
   columns: [
     {key: 'name', title: 'Name'},
-    {key: 'age', title: 'Name'},
+    {key: 'age', title: 'Age'},
     {key: 'occ', title: 'Occupation'}
   ]
 });
