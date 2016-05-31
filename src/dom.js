@@ -4,7 +4,7 @@ module.exports.getPreviousSibling = function(node, selector) {
     if (!node) break;
     // FIXME this needs a vendor prefix in IE 9+
     // <http://caniuse.com/#search=matches>
-    if (node.matches(selector)) {
+    if (node.nodeType === 1 && node.matches(selector)) {
       return node;
     }
   }
