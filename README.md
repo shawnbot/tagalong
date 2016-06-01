@@ -11,8 +11,8 @@ Given this HTML:
 ```html
 <div id="people">
   <h1>
-    <span t-text="items.length">0</span>
-    <span t-text="items.length === 1 ? 'person' : 'people'">people</span>
+    <span t-text="items.length">1</span>
+    <span t-text="items.length === 1 ? 'person' : 'people'">person</span>
   </h1>
   <ul>
     <li t-each="people">
