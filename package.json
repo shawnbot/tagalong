@@ -4,18 +4,22 @@
   "description": "DOM templating, done right",
   "main": "src/index.js",
   "dependencies": {
-    "incremental-dom": "^0.2.0",
-    "document-register-element": "^0.5.0"
+    "document-register-element": "^0.5.0",
+    "morphdom": "github:shawnbot/morphdom#namespace-aware"
   },
   "devDependencies": {
-    "jsdom": "^3.1.2",
+    "eslint": "^2.10.2",
+    "eslint-config-airbnb-base": "^3.0.1",
+    "eslint-plugin-import": "^1.8.0",
+    "jsdom": "^9.1.0",
     "mocha": "^2.3.3",
     "webpack": "^1.12.3"
   },
   "scripts": {
-    "test": "mocha",
-    "start": "webpack --watch --config webpack.conf.js",
-    "build": "webpack --config webpack.conf.js"
+    "build": "webpack",
+    "lint": "eslint src/**/*.js",
+    "start": "webpack --watch",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",

@@ -1,4 +1,6 @@
+/* eslint no-new-func: "warn" */
 var arrow = require('./arrow');
+var functor = require('./functor');
 
 var evaluate = function(expression, data) {
   var fn = evaluator(expression);
@@ -6,11 +8,19 @@ var evaluate = function(expression, data) {
 };
 
 var evaluator = function(expression) {
+  if (typeof expression !== 'string') {
+    expression = String(expression);
+  }
+
+  if (!expression.trim()) {
+    return functor(undefined);
+  }
+
   if (arrow.is(expression)) {
     return arrow.parse(expression);
   }
 
-  var symbol = 'd' + Date.now();
+  var symbol = 'd';
   // '.' is just the identity function
   if (expression.match(/^\s*\.\s*$/)) {
     return identity;
@@ -32,7 +42,7 @@ var evaluator = function(expression) {
 
 module.exports = {
   evaluate: evaluate,
-  evaluator: evaluator,
+  evaluator: evaluator
 };
 
 function identity(d) {

@@ -1,0 +1,13 @@
+extends: airbnb-base/legacy
+
+env:
+  node: true
+
+rules:
+  func-names: "off"
+  no-param-reassign: "off"
+  no-restricted-syntax: "warn"
+  no-use-before-define: "off"
+  object-curly-spacing: "off"
+  space-before-function-paren: "off"
+  vars-on-top: "off"

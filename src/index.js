@@ -1,7 +1,6 @@
-var xp = require('./evaluate');
 var render = require('./render');
 
 module.exports = {
-  createRenderer: render.create,
+  createRenderer: render.createRenderer,
   render: render.render
 };

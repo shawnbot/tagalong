@@ -1,25 +1,32 @@
-var jsdom = require('jsdom');
-var assert = require('assert');
-var path = require('path');
-var source = path.join(__dirname, '../tagalong.js');
+const jsdom = require('jsdom');
+const assert = require('assert');
+const path = require('path');
+const tagalong = require('../');
+
+// namespace URIs, for convenience
+const ns = require('../src/ns');
+const XLINK = ns.prefixToURI.xlink;
+const XMLNS = ns.prefixToURI.xmlns;
+const SVG = ns.prefixToURI.svg;
+
+var root;
+before(function(done) {
+  var context = this;
+  jsdom.env('<!DOCTYPE html>\n<div id="root"></div>', function(errors, _window) {
+    if (errors) return done(errors[0]);
+    global.window = _window;
+    global.document = _window.document;
+    global.Node = _window.Node;
+    root = _window.document.getElementById('root');
+    done();
+  });
+});
+
+afterEach(function() {
+  root.innerHTML = '';
+});
 
 describe('render()', function() {
-  var window;
-  var document;
-  var body;
-  var tagalong;
-
-  beforeEach(function(done) {
-    var context = this;
-    jsdom.env('<body></body>', [source], function(errors, _window) {
-      if (errors) return done(errors[0]);
-      window = _window;
-      document = _window.document;
-      body = _window.document.body;
-      tagalong = _window.tagalong;
-      done();
-    });
-  });
 
   it('throws an error when it cannot find its target', function() {
     assert.throws(function() {
@@ -28,210 +35,253 @@ describe('render()', function() {
   });
 
   it('accepts a CSS selector as a template target', function() {
-    body.innerHTML = '<div t-text="foo"></div>';
-    tagalong.render('body', {foo: 'bar'});
-    assert.equal(body.innerHTML, '<div>bar</div>');
+    root.innerHTML = '<div t-text="foo"></div>';
+    tagalong.render('#root', {foo: 'bar'});
+    assert.equal(root.innerHTML, '<div>bar</div>');
   });
 
   it('returns a render function for updates', function() {
-    body.innerHTML = '<div t-text="foo"></div>';
-    var render = tagalong.render(body, {foo: 'bar'});
-    assert.equal(body.innerHTML, '<div>bar</div>');
+    root.innerHTML = '<div t-text="foo"></div>';
+    var render = tagalong.render(root, {foo: 'bar'});
+    assert.equal(root.innerHTML, '<div>bar</div>');
     render({foo: 'qux'});
-    assert.equal(body.innerHTML, '<div>qux</div>');
+    assert.equal(root.innerHTML, '<div>qux</div>');
   });
 
   it('renders a key expression as text', function() {
-    body.innerHTML = '<div t-text="foo"></div>';
-    tagalong.render(body, {foo: 'bar'});
-    assert.equal(body.innerHTML, '<div>bar</div>');
+    root.innerHTML = '<div t-text="foo"></div>';
+    tagalong.render(root, {foo: 'bar'});
+    assert.equal(root.innerHTML, '<div>bar</div>');
   });
 
   it('renders a nested object key as text', function() {
-    body.innerHTML = '<div t-text="foo.bar"></div>';
-    tagalong.render(body, {foo: {bar: 'baz'}});
-    assert.equal(body.innerHTML, '<div>baz</div>');
+    root.innerHTML = '<div t-text="foo.bar"></div>';
+    tagalong.render(root, {foo: {bar: 'baz'}});
+    assert.equal(root.innerHTML, '<div>baz</div>');
   });
 
   describe('t- attributes', function() {
     it('renders expression attributes with the "t-" prefix', function() {
-      body.innerHTML = '<div t-id="foo.bar">hi</div>';
-      tagalong.render(body, {foo: {bar: 'baz'}});
-      assert.equal(body.innerHTML, '<div id="baz">hi</div>');
+      root.innerHTML = '<div t-id="foo.bar">hi</div>';
+      tagalong.render(root, {foo: {bar: 'baz'}});
+      assert.equal(root.innerHTML, '<div id="baz">hi</div>');
     });
 
     it('renders template strings in prefixed attrs', function() {
-      body.innerHTML = '<a t-href="#{{ id }}">hi</a>';
-      tagalong.render(body, {id: 'foo'});
-      assert.equal(body.innerHTML, '<a href="#foo">hi</a>');
+      root.innerHTML = '<a t-href="#{{ id }}">hi</a>';
+      tagalong.render(root, {id: 'foo'});
+      assert.equal(root.innerHTML, '<a href="#foo">hi</a>');
     });
 
     it('does not confuse template strings and fat arrows', function() {
-      body.innerHTML = '<a t-title="x => {{ id }}">hi</a>';
-      tagalong.render(body, {id: 'foo'});
-      assert.equal(body.innerHTML, '<a title="x => foo">hi</a>');
+      root.innerHTML = '<a t-title="x => {{ id }}">hi</a>';
+      tagalong.render(root, {id: 'foo'});
+      assert.equal(root.innerHTML, '<a title="x => foo">hi</a>');
     });
 
-    xit('re-renders attributes with the "t-" prefix', function() {
-      body.innerHTML = '<div t-class="foo.bar">hi</div>';
-      var render = tagalong.render(body, {foo: {bar: 'baz'}});
-      assert.equal(body.innerHTML, '<div class="baz">hi</div>');
+    it('re-renders attributes with the "t-" prefix', function() {
+      root.innerHTML = '<div t-class="foo.bar">hi</div>';
+      var render = tagalong.render(root, {foo: {bar: 'baz'}});
+      assert.equal(root.innerHTML, '<div class="baz">hi</div>');
       render({foo: {bar: 'qux'}});
-      assert.equal(body.innerHTML, '<div class="qux">hi</div>');
+      assert.equal(root.innerHTML, '<div class="qux">hi</div>');
     });
   });
 
   describe('t-class attribute', function() {
     it('renders class names with t-class="{names}"', function() {
-      body.innerHTML = '<div t-class="foo">hi</div>';
-      var render = tagalong.render(body, {foo: {bar: true, baz: false}});
-      assert.equal(body.innerHTML, '<div class="bar">hi</div>');
+      root.innerHTML = '<div t-class="foo">hi</div>';
+      var render = tagalong.render(root, {foo: {bar: true, baz: false}});
+      assert.equal(root.innerHTML, '<div class="bar">hi</div>');
     });
 
-    xit('re-renders class names with t-class="{names}"', function() {
-      body.innerHTML = '<div t-class="foo">hi</div>';
-      var render = tagalong.render(body, {foo: {bar: true, baz: false}});
-      assert.equal(body.innerHTML, '<div class="bar">hi</div>');
+    it('re-renders class names with t-class="{names}"', function() {
+      root.innerHTML = '<div t-class="foo">hi</div>';
+      var render = tagalong.render(root, {foo: {bar: true, baz: false}});
+      assert.equal(root.innerHTML, '<div class="bar">hi</div>');
       render({foo: null});
-      assert.equal(body.innerHTML, '<div class="baz">hi</div>');
+      assert.equal(root.innerHTML, '<div>hi</div>');
     });
   });
 
   describe('t-style attribute', function() {
     it('renders inline styles with t-style="{properties}"', function() {
-      body.innerHTML = '<div t-style="x">hi</div>';
-      var render = tagalong.render(body, {x: {color: 'green', fontWeight: 'bold'}});
-      assert.equal(body.innerHTML, '<div style="color: green; font-weight: bold;">hi</div>');
+      root.innerHTML = '<div t-style="x">hi</div>';
+      var render = tagalong.render(root, {x: {color: 'green', fontWeight: 'bold'}});
+      assert.equal(root.innerHTML, '<div style="color: green; font-weight: bold;">hi</div>');
     });
 
-    xit('re-renders inline styles with t-style="{properties}"', function() {
-      body.innerHTML = '<div t-style="x">hi</div>';
-      var render = tagalong.render(body, {x: {color: 'green', fontWeight: 'bold'}});
-      assert.equal(body.innerHTML, '<div style="color: green; font-weight: bold;">hi</div>');
+    it('re-renders inline styles with t-style="{properties}"', function() {
+      root.innerHTML = '<div t-style="x">hi</div>';
+      var render = tagalong.render(root, {x: {color: 'green', fontWeight: 'bold'}});
+      assert.equal(root.innerHTML, '<div style="color: green; font-weight: bold;">hi</div>');
       render({x: {color: 'blue', lineHeight: '2'}});
-      assert.equal(body.innerHTML, '<div style="color: blue; line-height: 2;">hi</div>');
+      assert.equal(root.innerHTML, '<div style="color: blue; line-height: 2;">hi</div>');
     });
   });
 
   describe('t-if', function() {
     it('interprets if statements', function() {
-      body.innerHTML = '<div t-if="foo">yes</div>';
-      var render = tagalong.render(body, {foo: 0});
-      assert.equal(body.innerHTML, '');
+      root.innerHTML = '<div t-if="foo">yes</div>';
+      var render = tagalong.render(root, {foo: 0});
+      assert.equal(root.innerHTML, '');
       render({foo: 1});
-      assert.equal(body.innerHTML, '<div>yes</div>');
+      assert.equal(root.innerHTML, '<div>yes</div>');
     });
 
     it('interprets if/else statements', function() {
-      body.innerHTML = '<div t-if="foo">yes</div><span t-else>no</span>';
-      var render = tagalong.render(body, {foo: 0});
-      assert.equal(body.innerHTML, '<span>no</span>');
+      root.innerHTML = '<div t-if="foo">yes</div><span t-else>no</span>';
+      var render = tagalong.render(root, {foo: 0});
+      assert.equal(root.innerHTML, '<span>no</span>');
       render({foo: 1});
-      assert.equal(body.innerHTML, '<div>yes</div>');
+      assert.equal(root.innerHTML, '<div>yes</div>');
     });
   });
 
   describe('t-each', function() {
     it('iterates over arrays', function() {
-      body.innerHTML = '<b t-each="things">{{.}}</b>';
-      tagalong.render(body, {things: ['foo', 'bar']});
-      assert.equal(body.innerHTML, '<b>foo</b><b>bar</b>');
+      root.innerHTML = '<b t-each="things">{{.}}</b>';
+      tagalong.render(root, {things: ['foo', 'bar']});
+      assert.equal(root.innerHTML, '<b>foo</b><b>bar</b>');
     });
 
     it('sets the $i variable', function() {
-      body.innerHTML = '<b t-each="things">{{.}}@{{$i}}</b>';
-      tagalong.render(body, {things: ['foo', 'bar']});
-      assert.equal(body.innerHTML, '<b>foo@0</b><b>bar@1</b>');
+      root.innerHTML = '<b t-each="things">{{.}}@{{$i}}</b>';
+      tagalong.render(root, {things: ['foo', 'bar']});
+      assert.equal(root.innerHTML, '<b>foo@0</b><b>bar@1</b>');
     });
   });
 
   describe('t-foreach', function() {
     it('iterates over arrays', function() {
-      body.innerHTML = '<b t-foreach="things"><i>{{.}}</i></b>';
-      tagalong.render(body, {things: ['foo', 'bar']});
-      assert.equal(body.innerHTML, '<b><i>foo</i><i>bar</i></b>');
+      root.innerHTML = '<b t-foreach="things"><i>{{.}}</i></b>';
+      tagalong.render(root, {things: ['foo', 'bar']});
+      assert.equal(root.innerHTML, '<b><i>foo</i><i>bar</i></b>');
     });
 
     it('sets the $i variable', function() {
-      body.innerHTML = '<b t-foreach="things">{{.}}@{{$i}};</b>';
-      tagalong.render(body, {things: ['foo', 'bar']});
-      assert.equal(body.innerHTML, '<b>foo@0;bar@1;</b>');
+      root.innerHTML = '<b t-foreach="things">{{.}}@{{$i}};</b>';
+      tagalong.render(root, {things: ['foo', 'bar']});
+      assert.equal(root.innerHTML, '<b>foo@0;bar@1;</b>');
     });
   });
 
   describe('t-skip', function() {
     it('skips elements with t-skip attributes', function() {
-      body.innerHTML = '<div>hello, world<span t-skip>!</span></div>';
-      var render = tagalong.render(body);
-      assert.equal(body.innerHTML, '<div>hello, world</div>');
+      root.innerHTML = 'hello, world<span t-skip>!</span>';
+      var render = tagalong.render(root, {});
+      assert.equal(root.innerHTML, 'hello, world');
     });
   });
 
   describe('t-with', function() {
     it('does the right thing', function() {
-      body.innerHTML = [
+      root.innerHTML = [
         '<h1 t-with="items">',
           '<b t-text="length">0</b>',
           ' item<i t-if="length !== 1">s</i>',
         '</h1>'
       ].join('');
-      var render = tagalong.render(body, {
+      var render = tagalong.render(root, {
         items: ['foo']
       });
-      assert.equal(body.innerHTML, '<h1><b>1</b> item</h1>');
+      assert.equal(root.innerHTML, '<h1><b>1</b> item</h1>');
       render({items: ['foo', 'bar']});
-      assert.equal(body.innerHTML, '<h1><b>2</b> item<i>s</i></h1>');
+      assert.equal(root.innerHTML, '<h1><b>2</b> item<i>s</i></h1>');
     });
   });
 
   describe('text expressions', function() {
     it('interoplates {{ expressions }}', function() {
-      body.innerHTML = 'Hello, {{ world }}!';
-      var render = tagalong.render(body, {world: 'Earth'});
-      assert.equal(body.innerHTML, 'Hello, Earth!');
+      root.innerHTML = 'Hello, {{ world }}!';
+      var render = tagalong.render(root, {world: 'Earth'});
+      assert.equal(root.innerHTML, 'Hello, Earth!');
       render({world: 'world'});
-      assert.equal(body.innerHTML, 'Hello, world!');
+      assert.equal(root.innerHTML, 'Hello, world!');
     });
 
-    it('doesn\'t get greedy with curlies', function() {
-      body.innerHTML = 'The {{x}} and the {{y || x}}';
-      var render = tagalong.render(body, {x: 'birds', y: 'bees'});
-      assert.equal(body.innerHTML, 'The birds and the bees');
+    it("doesn't get greedy with curlies", function() {
+      root.innerHTML = 'The {{x}} and the {{y || x}}';
+      var render = tagalong.render(root, {x: 'birds', y: 'bees'});
+      assert.equal(root.innerHTML, 'The birds and the bees');
       render({x: 'birds', y: null});
-      assert.equal(body.innerHTML, 'The birds and the birds');
+      assert.equal(root.innerHTML, 'The birds and the birds');
     });
+  });
+
+  it('preserves element namespaces', function() {
+    var svg = root.appendChild(document.createElementNS(SVG, 'svg'));
+    var nsURI = svg.namespaceURI;
+    /*
+     * This should cover a bad assumption on my part, namely that
+     * we're always executing in a compliant HTML5 DOM, in which
+     * elements like <svg> are implicitly namespaced.
+     */
+    assert.equal(nsURI, SVG,
+                 'wrong <svg> namespaceURI before morph: ' + nsURI);
+
+    tagalong.render(root, {});
+
+    svg = root.firstChild;
+    console.log('rendered:', svg.outerHTML, svg.namespaceURI);
+    nsURI = svg.namespaceURI;
+    assert.equal(nsURI, SVG,
+                 'wrong <svg> namespaceURI after morph: ' + nsURI);
+  });
+
+  it('preserves namespaces in templated attributes', function() {
+    root.innerHTML = (
+      '<svg>' +
+      '<a t-each="items" xlink:t-href="href"></a>' +
+      '</svg>'
+    );
+    tagalong.render(root, {
+      items: [
+        {href: '#foo'},
+        {href: '#bar'}
+      ]
+    });
+    assert.equal(
+      root.innerHTML,
+      (
+        '<svg>' +
+        '<a xlink:href="#foo"></a>' +
+        '<a xlink:href="#bar"></a>' +
+        '</svg>'
+      )
+    );
   });
 
   describe('expressions', function() {
 
     it('inherits scope from the calling context', function() {
-      body.innerHTML = '<div t-text="lower(name)">Joe</div>';
-      var render = tagalong.createRenderer(body, {
+      root.innerHTML = '<div t-text="lower(name)">Joe</div>';
+      var render = tagalong.render(root, null, {
         lower: function(name) { return name.toLowerCase(); }
       });
       render({name: 'Bill'});
-      assert.equal(body.innerHTML, '<div>bill</div>');
+      assert.equal(root.innerHTML, '<div>bill</div>');
     });
 
     it('aliases symbols', function() {
-      body.innerHTML = [
+      root.innerHTML = [
         '<ul t-foreach="." t-as="item">',
           '<li t-text="item">Jill</li>',
         '</ul>'
       ].join('');
       var data = ['Jill', 'Jane', 'Joe'];
-      tagalong.render(body, data);
-      assert.equal(body.innerHTML, '<ul><li>Jill</li><li>Jane</li><li>Joe</li></ul>');
+      tagalong.render(root, data);
+      assert.equal(root.innerHTML, '<ul><li>Jill</li><li>Jane</li><li>Joe</li></ul>');
     });
 
     it('interprets "." as identity', function() {
-      body.innerHTML = '<b t-text=".">foo</b>';
-      tagalong.render(body, 'bar');
-      assert.equal(body.innerHTML, '<b>bar</b>');
+      root.innerHTML = '<b t-text=".">foo</b>';
+      tagalong.render(root, 'bar');
+      assert.equal(root.innerHTML, '<b>bar</b>');
 
-      body.innerHTML = '<b>{{.}}</b>';
-      tagalong.render(body, 'baz');
-      assert.equal(body.innerHTML, '<b>baz</b>');
+      root.innerHTML = '<b>{{.}}</b>';
+      tagalong.render(root, 'baz');
+      assert.equal(root.innerHTML, '<b>baz</b>');
     });
 
     it('understands fat arrows', function() {
@@ -242,40 +292,91 @@ describe('render()', function() {
       ];
 
       variants.forEach(function(html) {
-        body.innerHTML = html;
-        tagalong.render(body, ['foo']);
-        assert.equal(body.innerHTML, '<span>foo</span>');
+        root.innerHTML = html;
+        tagalong.render(root, ['foo']);
+        assert.equal(root.innerHTML, '<span>foo</span>');
       });
     });
 
     it('passes scope to fat arrows', function() {
-      body.innerHTML = '<b t-text="x => f(x)"></b>';
-      tagalong.render(body, 10, {
+      root.innerHTML = '<b t-text="x => f(x)"></b>';
+      tagalong.render(root, 10, {
         f: function(x) { return x * x; }
       });
-      assert.equal(body.innerHTML, '<b>100</b>');
+      assert.equal(root.innerHTML, '<b>100</b>');
     });
 
   });
 
-  xdescribe('on* attributes', function() {
-    it('should not evaluate on* attrs', function(done) {
-      body.innerHTML = '<a id="foo" t-onclick="e => test(e.target.id)">hi</a>';
-      var link = body.querySelector('a');
-      var rendered = false;
-      tagalong.render(body, {}, {
-        test: function(e) {
-          assert.equal(rendered, false, 'this should not call until after rendering');
-          assert.equal(e.target.id, 'foo');
+  describe('events', function() {
+
+    it('adds event handlers for t-on* attributes', function(done) {
+      root.innerHTML = '<a id="world" t-onclick="() => done()">hi</a>';
+
+      tagalong.render(root, {}, {done: done});
+
+      var a = root.querySelector('a');
+      assert.equal(a.hasAttribute('t-onclick'), false);
+      a.click();
+    });
+
+    it('handlers pass the event as the second argument', function(done) {
+      root.innerHTML = '<a id="world" t-onclick="(d, e) => click(e)">hi</a>';
+
+      tagalong.render(root, {}, {
+        click: function(e) {
+          assert.equal(e.type, 'click');
           done();
         }
       });
-      assert.equal(typeof link.onclick, 'function', 'no onclick handler set');
-      rendered = true;
-      var e = document.createEvent('MouseEvents');
-      e.initEvent('click', true, true);
-      link.onclick(e);
+
+      root.querySelector('a').click();
     });
+
+    it('adds per-element handlers for iterants', function() {
+      root.innerHTML = '<a t-each="." t-onclick="(d) => push(d)"></a>';
+      var data = ['x', 'y', 'z'];
+      var values = [];
+      tagalong.render(root, data, {
+        push: (d) => values.push(d)
+      });
+      [].forEach.call(root.querySelectorAll('a'), (a) => {
+        a.click();
+        a.click();
+      });
+      assert.deepEqual(values, 'x x y y z z'.split(' '));
+    });
+
+    it('removes event handlers when re-rendered', function() {
+      var data = ['x', 'y', 'z'];
+      var values = [];
+      var context = {
+        push: (d) => values.push(d)
+      };
+
+      var expected = '<a>x</a><a>y</a><a>z</a>';
+
+      root.innerHTML = '<a t-each="." t-onclick="(d) => push(d)">{{ . }}</a>';
+      tagalong.render(root, data, context);
+      assert.equal(root.innerHTML, expected);
+
+      root.innerHTML = '<a t-each=".">{{ . }}</a>';
+      tagalong.render(root, data, context);
+      assert.equal(root.innerHTML, expected);
+
+      [].forEach.call(root.querySelectorAll('a'), (a) => {
+        a.click();
+      });
+
+      assert.deepEqual(values, []);
+    });
+
+    it('perserves on* attributes', function() {
+      var html = root.innerHTML = '<a onclick="alert(1)"></a>';
+      tagalong.render(root, {});
+      assert.equal(root.innerHTML, html);
+    });
+
   });
 
 });
