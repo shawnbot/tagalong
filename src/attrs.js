@@ -6,7 +6,7 @@ var ns = require('./ns');
 var util = require('./util');
 var defined = util.defined;
 
-module.exports.getAttributeMap = function(node) {
+module.exports.getAttributeMap = function(node, preserved) {
   var map = {};
   var attrs = node.attributes;
   for (var i = 0; i < attrs.length; i++) {
@@ -14,14 +14,21 @@ module.exports.getAttributeMap = function(node) {
     var name = ns.qualify(attr.name);
     var localName = name.localName;
     var value = attr.value;
+    var qname;
     if (localName.indexOf(T_PREFIX) === 0) {
+      if (preserved) {
+        qname = name.prefix
+          ? name.prefix + ':' + localName
+          : localName;
+        map[qname] = value;
+      }
       localName = localName.substr(T_PREFIX.length);
       if (CONTROL_ATTRS.indexOf(localName) > -1) {
         continue;
       }
-      value = util.compileExpression(value);
+      value = util.compileExpression(value, preserved);
     }
-    var qname = name.prefix
+    qname = name.prefix
       ? name.prefix + ':' + localName
       : localName;
     map[qname] = value;
@@ -29,7 +36,7 @@ module.exports.getAttributeMap = function(node) {
   return map;
 };
 
-module.exports.interpolateAttributes = function(attrMap, data) {
+module.exports.interpolateAttributes = function(attrMap, data, index) {
   var attrs = {};
   for (var key in attrMap) {
     if (!attrMap.hasOwnProperty(key)) {
@@ -38,7 +45,7 @@ module.exports.interpolateAttributes = function(attrMap, data) {
     var value = attrMap[key];
     // only apply functions for attrs that aren't event handlers
     if (typeof value === 'function' && key.indexOf('on') !== 0) {
-      value = value.call(this, data, key);
+      value = value.call(this, data, index, key);
     }
     if (defined(value)) {
       attrs[key] = value;

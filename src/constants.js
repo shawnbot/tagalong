@@ -25,3 +25,5 @@ module.exports.CONTROL_ATTRS = [
   'text',
   'with'
 ];
+
+module.exports.HIDE_CSS = '/* T */display: none;/* T */';

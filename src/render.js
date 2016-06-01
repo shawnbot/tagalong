@@ -6,12 +6,15 @@ var h = require('./h');
 var morphdom = require('morphdom');
 
 var T = require('./constants').T;
-var T_ID = 't-id';
 var attr = require('./attrs');
 var dom = require('./dom');
 var util = require('./util');
 var ns = require('./ns');
 var scope = require('./scope');
+
+// this is the attribute that we set to identify morphed elements
+// with event handlers
+var T_ID = 't-id';
 
 // this is our symbol on which we stash registered event handlers, so that
 // we can remove any registered handlers before adding new ones.
@@ -22,6 +25,11 @@ var EVENTS = '[[t-events]]';
 var eventHandlerId = 0;
 var eventHandlersById = {};
 
+var preserve = function(context) {
+  return typeof context === 'object'
+      && context.TAGALONG_PRESERVE === true;
+};
+
 /**
  * Returns a function that generates an interpolated string for the
  * given text node (`node.nodeType === Node.TEXT_NODE`).
@@ -29,8 +37,10 @@ var eventHandlersById = {};
  * @param {Node} node
  * @return {Function} function(data:Object):String
  */
-var createTextRenderer = function(node) {
-  return compose.stringify(interpolate.compile(node.nodeValue));
+var createTextRenderer = function(node, preserved) {
+  return compose.stringify(
+    interpolate.compile(node.nodeValue, preserved)
+  );
 };
 
 /**
@@ -99,7 +109,7 @@ var registerEventHandlers = function(render, handlers) {
  * @param {Element} node
  * @return {Function} function(data:Object):Element
  */
-var createElementRenderer = function(node) {
+var createElementRenderer = function(node, preserved) {
   // this element will never be rendered if it has a truthy t-skip
   // attribute
   if (node.hasAttribute(T.SKIP)) {
@@ -107,7 +117,7 @@ var createElementRenderer = function(node) {
   }
 
   var name = ns.getPrefixedName(node);
-  var attrMap = attr.getAttributeMap(node);
+  var attrMap = attr.getAttributeMap(node, preserved);
   var handlers = pluckEventHandlers(attrMap);
 
   var condition = node.hasAttribute(T.IF)
@@ -133,26 +143,28 @@ var createElementRenderer = function(node) {
   // <span t-text="some.value"></span>
   if (node.hasAttribute(T.TEXT)) {
     renderChildren = compose.stringify(
-      util.compileExpression(node.getAttribute(T.TEXT))
+      util.compileExpression(node.getAttribute(T.TEXT), preserved)
     );
   } else {
-    var childRenderers = [].map.call(node.childNodes, compile);
-    renderChildren = function(data) {
+    var childRenderers = [].map.call(node.childNodes, function(child) {
+      return compile(child, preserved);
+    });
+    renderChildren = function(data, index) {
       return childRenderers.map(function(renderChild, i) {
         return (typeof renderChild === 'function')
-          ? renderChild.call(this, data)
+          ? renderChild.call(this, data, index)
           : renderChild;
       }, this);
     };
   }
 
-  var renderNode = function(data) {
-    if (condition && !condition.call(this, data)) {
+  var renderNode = function(data, index) {
+    if (condition && !condition.call(this, data) && !preserved) {
       return undefined;
     }
 
-    var attrs = attr.interpolateAttributes.call(this, attrMap, data);
-    var children = renderChildren.call(this, data);
+    var attrs = attr.interpolateAttributes.call(this, attrMap, data, index);
+    var children = renderChildren.call(this, data, index);
     return h(name, attrs, children);
   };
 
@@ -169,15 +181,17 @@ var createElementRenderer = function(node) {
 
   if (eachExpression) {
     renderNode = scope.renderEach(
-      code.evaluator(eachExpression),
+      eachExpression,
       renderNode,
-      symbol
+      symbol,
+      preserved
     );
   } else if (forEachExpression) {
     renderChildren = scope.renderEach(
-      code.evaluator(forEachExpression),
+      forEachExpression,
       renderChildren,
-      symbol
+      symbol,
+      preserved
     );
   } else if (withExpression) {
     renderNode = scope.renderWith(
@@ -217,7 +231,7 @@ var createRenderer = function(src, context) {
     }
   }
 
-  var renderNode = compile(src);
+  var renderNode = compile(src, preserve(context));
   return function(node, data, options) {
     if (arguments.length < 2) {
       data = node;
@@ -294,12 +308,12 @@ var render = function(src, data, context) {
  * @return {Function} the returned function takes data and returns an
  * unattached Node instance: function(data:Object):Node
  */
-var compile = function(node) {
+var compile = function(node, preserved) {
   switch (node.nodeType) {
     case 1: // Node.ELEMENT_NODE
-      return createElementRenderer(node);
+      return createElementRenderer(node, preserved);
     case 3: // Node.TEXT_NODE
-      return createTextRenderer(node);
+      return createTextRenderer(node, preserved);
 
     // TODO: support document fragments?
     // this would need support in h()
