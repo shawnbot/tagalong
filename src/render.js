@@ -33,6 +33,13 @@ var createTextRenderer = function(node) {
   return compose.stringify(interpolate.compile(node.nodeValue));
 };
 
+var createCommentRenderer = function(node) {
+  var value = compose.stringify(interpolate.compile(node.nodeValue));
+  return function() {
+    return document.createComment(value.apply(this, arguments));
+  };
+};
+
 /**
  * "Pluck" event handlers from an attribute map, removing them from
  * the map. If no event handlers are found, the return value is
@@ -298,8 +305,12 @@ var compile = function(node) {
   switch (node.nodeType) {
     case 1: // Node.ELEMENT_NODE
       return createElementRenderer(node);
+
     case 3: // Node.TEXT_NODE
       return createTextRenderer(node);
+
+    case 8: // Node.COMMENT_NODE
+      return createCommentRenderer(node);
 
     // TODO: support document fragments?
     // this would need support in h()
