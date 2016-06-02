@@ -60,6 +60,18 @@ describe('render()', function() {
     assert.equal(root.innerHTML, '<div>baz</div>');
   });
 
+  it('preserves comments', function() {
+    var html = root.innerHTML = 'foo <!-- bar --> baz';
+    tagalong.render(root, {});
+    assert.equal(root.innerHTML, html);
+  });
+
+  it('interpolates comments', function() {
+    var html = root.innerHTML = 'foo <!-- {{ x }} --> baz';
+    tagalong.render(root, {x: 'bar'});
+    assert.equal(root.innerHTML, 'foo <!-- bar --> baz');
+  });
+
   describe('t- attributes', function() {
     it('renders expression attributes with the "t-" prefix', function() {
       root.innerHTML = '<div t-id="foo.bar">hi</div>';
