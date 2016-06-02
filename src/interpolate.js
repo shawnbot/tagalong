@@ -7,7 +7,7 @@ var isTemplate = function(str) {
   return new RegExp(pattern).test(str);
 };
 
-var compile = function(template) {
+var compile = function(template, preserved) {
   if (typeof template !== 'string') {
     throw new Error('interpolate.compile() expected a string;' +
                     'got ' + (typeof template));
@@ -17,8 +17,11 @@ var compile = function(template) {
     return functor(template);
   }
 
-  return function(data) {
+  return function(data, index) {
     var that = this;
+    if (preserved && index === 0 && data === undefined) {
+      return template;
+    }
     return template.replace(pattern, function(_, part) {
       return evaluate.call(that, part, data);
     });

@@ -1,7 +1,7 @@
 const jsdom = require('jsdom');
 const assert = require('assert');
 const path = require('path');
-const tagalong = require('../');
+const tagalong = require('../src');
 
 // namespace URIs, for convenience
 const ns = require('../src/ns');

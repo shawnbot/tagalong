@@ -5,8 +5,8 @@ module.exports.defined = function(value) {
   return value !== null && value !== undefined;
 };
 
-module.exports.compileExpression = function(expr) {
+module.exports.compileExpression = function(expr, preserved) {
   return interpolate.isTemplate(expr)
-    ? interpolate.compile(expr)
+    ? interpolate.compile(expr, preserved)
     : code.evaluator(expr);
 };

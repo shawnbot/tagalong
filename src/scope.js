@@ -1,7 +1,32 @@
-var renderEach = function(fn, render, symbol) {
-  return function(data) {
-    var values = fn.call(this, data);
-    return forEach.call(this, values, render, symbol);
+var code = require('./evaluate');
+var HIDE_CSS = require('./constants').HIDE_CSS;
+
+var renderEach = function(expr, render, symbol, preserved) {
+  var fn = code.evaluator(expr);
+  return function(data, index) {
+    var values = fn.call(this, data, index);
+    var empty = !values || !values.length;
+    if (preserved && empty) {
+      values = [undefined]; // XXX this may cause problems
+    }
+    var elements = forEach.call(this, values, render, symbol);
+    if (preserved) {
+      var el = elements[0];
+      if (empty) {
+        el.setAttribute('style', HIDE_CSS);
+      } else if (el.getAttribute('style') === HIDE_CSS) {
+        el.removeAttribute('style');
+      }
+      for (var i = elements.length - 1; i > 0; i--) {
+        el = elements[i];
+        el.removeAttribute('t-each');
+        el.setAttribute('t-skip', '');
+        if (el.getAttribute('style') === HIDE_CSS) {
+          el.removeAttribute('style');
+        }
+      }
+    }
+    return elements;
   };
 };
 
@@ -22,7 +47,7 @@ var forEach = function(data, fn, symbol) {
   var INDEX = '$i';
   var each = function(d, i) {
     this[INDEX] = i;
-    result.push(iterate.call(this, d));
+    result.push(iterate.call(this, d, i));
     delete this[INDEX];
   };
 
