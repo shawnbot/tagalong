@@ -22,11 +22,12 @@
 
     <section id="examples" class="examples container">
       Examples:
-      <a t-each="." t-href="'#' + id"
-        t-data-template="template"
-        t-data-script="script"
+      <a t-each="."
+        t-href="#{{ id }}"
         t-onclick="d => select(d)"
-        t-class="d => ({active: selected === d})">
+        t-class="{active: selected.id === d.id}"
+        t-data-template="template"
+        t-data-script="script">
         <span t-text="title"></span>
       </a>
       <p t-text="selected ? selected.description : null"></p>
