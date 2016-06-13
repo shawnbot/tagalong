@@ -1,2 +1,3 @@
 exclude:
+  - node_modules
   - tagalong/node_modules
