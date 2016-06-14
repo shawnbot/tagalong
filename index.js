@@ -3,14 +3,12 @@
   var theme = 'eclipse';
   var inputHTML = CodeMirror.fromTextArea(document.querySelector('#input-html'), {
     lineNumbers: true,
-    viewportMargin: Infinity,
     theme: theme,
     mode: 'htmlmixed'
   });
 
   var inputJS = CodeMirror.fromTextArea(document.querySelector('#input-js'), {
     lineNumbers: true,
-    viewportMargin: Infinity,
     theme: theme,
     mode: 'javascript'
   });
@@ -60,7 +58,7 @@
 
     {
       id: '',
-      title: 'Default',
+      title: 'Basic',
       description: multiline(function(){/*
 A basic example with templated text nodes and a repeated list
 item.
@@ -122,7 +120,9 @@ the row object to a named variable for use in each cell expression.
   </thead>
   <tbody>
     <tr t-each="rows" t-as="row">
-      <td t-each="columns" t-as="col">{{ row[col.key] }}</td>
+      <td t-each="columns" t-as="col">
+        {{ row[col.key] }}
+      </td>
     </tr>
   </tbody>
 </table>
@@ -200,8 +200,8 @@ var render = tagalong.render('#template', data, {
     },
 
     {
-      id: 'form',
-      title: 'Interactions',
+      id: 'round-trip',
+      title: 'Round-trip rendering',
 
       description: multiline(function(){/*
 This is a more complicated example that uses data-aware event
@@ -211,13 +211,16 @@ events from submitting the surrounding form.
       */}),
 
       template: multiline(function(){/*
-<div id="template" t-onsubmit="(d, e) => e.preventDefault()">
+<div id="template"
+  t-onsubmit="(d, e) => e.preventDefault()">
   <p>People:</p>
   <ul t-if="people.length">
     <li t-each="people">
       {{ first }} {{ last }}
       <button type="button"
-        t-onclick="person => remove(person)">&times;</button>
+        t-onclick="person => remove(person)">
+        &times;
+      </button>
     </li>
   </ul>
   <p t-else>No people!</p>
@@ -225,7 +228,9 @@ events from submitting the surrounding form.
     <label>First: <input name="first"></label><br>
     <label>Last: <input name="last"></label><br>
     <button type="button"
-      t-onclick="d => add(d.people)">Add</button>
+      t-onclick="d => add(d.people)">
+      Add
+    </button>
   </p>
 </div>
       */}),
@@ -245,10 +250,14 @@ var render = tagalong.render('#template', data, {
     data.people.splice(i, 1);
     render();
   },
+  getValue: function(name) {
+    var input = document.getElementsByName(name)[0];
+    return input ? input.value : '';
+  },
   add: function(people) {
     var person = {
-      first: document.querySelector('[name=first]').value,
-      last: document.querySelector('[name=last]').value
+      first: this.getValue('first'),
+      last: this.getValue('last')
     };
     people.push(person);
     render();
