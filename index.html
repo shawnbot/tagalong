@@ -13,24 +13,34 @@
     </header>
 
     <section id="about" class="container">
-      <p>Tagalong is a dead-simple JavaScript DOM templating library that lets
-      you apply data (objects, arrays, strings and numbers) to elements in your
-      document, creating new elements as needed and only updating the elements
-      that relate to data. For more information, check out the <a
-      href="https://github.com/shawnbot/tagalong/">project on GitHub</a>.</p>
+      <p>Tagalong is a simple, yet powerful, JavaScript DOM
+      templating library that lets you apply data (objects, arrays,
+      strings and numbers) to elements in your document, creating new
+      elements as needed and only updating the elements that relate
+      to data. For more information, check out the <a
+      href="https://github.com/shawnbot/tagalong/">project on
+      GitHub</a>.</p>
     </section>
 
     <section id="examples" class="examples container">
       Examples:
-      <a t-each="."
-        t-href="#{{ id }}"
-        t-onclick="d => select(d)"
-        t-class="{active: selected.id === d.id}"
-        t-data-template="template"
-        t-data-script="script">
-        <span t-text="title"></span>
-      </a>
-      <p t-text="selected ? selected.description : null"></p>
+      <span role="tablist">
+        <a role="tab" t-each="."
+          t-aria-controls="content-{{ id || 'default' }}"
+          t-aria-expanded="selected.id === id"
+          t-href="#{{ id }}"
+          t-onclick="d => select(d)"
+          t-data-template="template"
+          t-data-script="script">
+          <span t-text="title"></span>
+        </a>
+      </span>
+      <p role="tabpanel" t-each="."
+        t-id="content-{{ id || 'default' }}"
+        t-aria-expanded="selected.id === id"
+        t-aria-hidden="selected.id !== id"
+        t-text="description">
+      </p>
     </section>
 
     <form class="container">
@@ -48,6 +58,9 @@
     &lt;li t-each="items"&gt;{{ . }}&lt;/li&gt;
   &lt;/ul&gt;
 &lt;/div&gt;</textarea>
+
+        <hr>
+
         <h2>JavaScript</h2>
         <textarea id="input-js">tagalong.render('#template', {
   title: 'This is the Title',
@@ -60,6 +73,8 @@
         <legend>Output</legend>
         <div id="output-node" class="output">
         </div>
+
+        <hr>
 
         <h2>HTML</h2>
         <pre id="output-html" class="output">
