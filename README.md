@@ -3,8 +3,8 @@
 Tagalong is a tool for creating progressively enhanced HTML templates.
 Write your content in HTML, add attributes that describe how data maps
 to each element, and update the DOM with a single JavaScript call.
-Tagalong uses [morphdom] under the hood, minimizing the number of
-changes to the DOM and limiting [layout thrashing].
+**Or don't!** Tagalong allows you to write HTML that _can_ be updated
+programmatically, but still makes sense as static, accessible content.
 
 Given this HTML:
 
@@ -51,6 +51,8 @@ And the result should look something like this:
 </div>
 ```
 
+Tagalong uses [morphdom] under the hood, minimizing the number of
+changes to the DOM and limiting [layout thrashing].
 
 ### API
 
